@@ -1,7 +1,8 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
-git config user.name "hibatullahbjn-debug"
-git config user.email "hibatullahbjn-debug@users.noreply.github.com"
+git remote remove origin 2>nul
+git remote add origin https://github.com/arsyad122804-design/buat-penerima-atau-tideak-di-acc-.git
+git branch -M main
 git add .
-git commit -m "Update logo and login credentials"
+git commit -m "first commit"
 git push -u origin main --force
