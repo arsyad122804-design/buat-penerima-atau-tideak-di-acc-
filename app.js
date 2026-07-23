@@ -964,6 +964,26 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- Mobile Sidebar Menu Toggle ---
+  const btnMenuMobile = document.getElementById("btn-menu-mobile");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+  if (btnMenuMobile) {
+    btnMenuMobile.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.body.classList.toggle("mobile-sidebar-open");
+    });
+  }
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener("click", () => {
+      document.body.classList.remove("mobile-sidebar-open");
+    });
+  }
+  document.querySelectorAll(".sidebar-nav .nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.body.classList.remove("mobile-sidebar-open");
+    });
+  });
+
   // --- Notifications ---
   const btnNotif = document.getElementById("btn-notif");
   const notifDropdown = document.getElementById("notif-dropdown");
