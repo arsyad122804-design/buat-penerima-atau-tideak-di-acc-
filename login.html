@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPMS — Login</title>
+  <meta name="description" content="Login ke Sistem Pengadaan & Manajemen Sekolah (SPMS)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* RESET */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080f1e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* CARD CONTAINER */
+    .card-container {
+      width: 100%;
+      max-width: 1050px;
+      min-height: 640px;
+      background: #111827; /* Dark gray/blue for the form side */
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      display: flex;
+      margin: 20px;
+      overflow: hidden;
+    }
+
+    /* =========================================
+       LEFT PANEL: Mesh Gradient & Branding
+    ========================================= */
+    .left-panel {
+      width: 48%;
+      margin: 12px;
+      border-radius: 24px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      /* Original SPMS dark gradient */
+      background: linear-gradient(145deg, #0f1f3d 0%, #0c1220 50%, #0a1628 100%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      color: white;
+    }
+    /* Add subtle orange orb in background */
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,107,0,0.3) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: 1;
+    }
+
+    .left-panel-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    /* Custom App Logo Image */
+    .app-logo-img {
+      object-fit: contain;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      background: #000000;
+      padding: 6px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .app-logo-img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+    }
+    .left-logo {
+      width: 240px;
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .brand-bottom {
+      max-width: 85%;
+    }
+    .brand-eyebrow {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #ff9240;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .brand-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+    }
+
+    /* =========================================
+       RIGHT PANEL: Form Area
+    ========================================= */
+    .right-panel {
+      width: 52%;
+      padding: 50px 70px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .right-logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 24px;
+    }
+
+    .form-header h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    .form-header p {
+      font-size: 14px;
+      color: #9ca3af;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    /* Views */
+    #view-login, #view-register {
+      width: 100%;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Form Fields */
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 8px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper input {
+      width: 100%;
+      height: 48px;
+      background: #1f2937;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #ffffff;
+      transition: all 0.2s;
+    }
+    .input-wrapper input::placeholder { color: #6b7280; }
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: #ff9240;
+      box-shadow: 0 0 0 4px rgba(255,107,0,0.15);
+      background: #273041;
+    }
+    
+    .btn-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      display: flex;
+      padding: 4px;
+    }
+    .btn-eye:hover { color: #4b5563; }
+    .btn-eye svg { width: 18px; height: 18px; }
+
+    /* Button */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(135deg, #ff6b00, #ff9240);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(255,107,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #e65c00, #ff8226);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255,107,0,0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Error Text */
+    .error-text {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-text.show { display: block; }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .btn-primary.loading .spinner { display: block; }
+    .btn-primary.loading span { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Separator */
+    .separator {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 28px 0;
+      color: #6b7280;
+      font-size: 12px;
+    }
+    .separator::before, .separator::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .separator span {
+      padding: 0 12px;
+    }
+
+    /* Social Buttons */
+    .social-btns {
+      display: flex;
+      gap: 12px;
+    }
+    .social-btn {
+      flex: 1;
+      height: 38px;
+      background: #1f2937;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .social-btn:hover { background: #374151; }
+    .social-btn svg { width: 16px; height: 16px; }
+
+    /* Footer Text */
+    .form-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .form-footer a {
+      color: #ff9240;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .form-footer a:hover { text-decoration: underline; }
+
+    /* Role Pills for Register */
+    .role-pills {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .role-pill {
+      flex: 1;
+      padding: 10px 0;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #1f2937;
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .role-pill.active {
+      background: rgba(255,107,0,0.15);
+      border-color: #ff9240;
+      color: #ff9240;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .card-container { flex-direction: column; border-radius: 0; min-height: 100vh; margin: 0; }
+      .left-panel { width: auto; min-height: 250px; margin: 0; border-radius: 0; padding: 30px; }
+      .right-panel { width: 100%; padding: 40px 30px; }
+      .icon-asterisk-blue { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-container">
+    
+    <!-- LEFT PANEL: Brand & Gradient -->
+    <div class="left-panel">
+      <div class="left-panel-content">
+        <!-- Hibatullah IIBS Logo -->
+        <img src="logo.jpg" alt="Logo Hibatullah IIBS" class="app-logo-img left-logo">
+
+        <div class="brand-bottom">
+          <p class="brand-eyebrow">Mudah & Terpadu</p>
+          <h1 class="brand-title" style="color: #ffffff;">Akses sistem pengadaan sekolah Anda dengan jelas dan produktif</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Form Area -->
+    <div class="right-panel">
+      
+      <!-- Hibatullah IIBS Logo -->
+      <img src="logo.jpg" alt="Logo Hibatullah IIBS" class="app-logo-img right-logo">
+
+      <!-- ================= LOGIN VIEW ================= -->
+      <div id="view-login">
+        <div class="form-header">
+          <h2 id="login-title">Masuk ke Akun</h2>
+          <p>Akses tugas, pengadaan, dan log proyek Anda kapan saja, di mana saja — tersimpan dalam satu tempat.</p>
+        </div>
+
+        <form id="login-form" novalidate>
+          <div class="input-group">
+            <label for="login-email">Username / Email</label>
+            <div class="input-wrapper">
+              <input type="text" id="login-email" placeholder="Ketik username Anda..." autocomplete="username" spellcheck="false" required>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="login-password">Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+              <button type="button" class="btn-eye" id="toggle-login-pass" tabindex="-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="error-text" id="login-error-text">Username atau password salah.</div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-login">
+            <span>Get Started</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+
+        <div class="form-footer">
+          Belum punya akun? <a href="#" id="link-show-register">Sign up</a>
+        </div>
+      </div>
+
+      <!-- ================= REGISTER VIEW ================= -->
+      <div id="view-register" style="display: none;">
+        <div class="form-header">
+          <h2>Buat Akun Baru</h2>
+          <p>Daftarkan akun SPMS Anda untuk memulai manajemen logistik yang lebih terstruktur dan rapi.</p>
+        </div>
+
+        <form id="register-form" novalidate>
+          <div class="input-group">
+            <label for="reg-email">Username / Email Baru</label>
+            <div class="input-wrapper">
+              <input type="text" id="reg-email" placeholder="contoh@gmail.com" required>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="reg-password">Password Baru</label>
+            <div class="input-wrapper">
+              <input type="password" id="reg-password" placeholder="••••••••" required>
+              <button type="button" class="btn-eye" id="toggle-reg-pass" tabindex="-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="error-text" id="reg-error-text">Email sudah digunakan.</div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-register">
+            <span>Daftar Sekarang</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+
+        <div class="form-footer">
+          Sudah punya akun? <a href="#" id="link-show-login">Masuk di sini</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // AUTHENTICATION API
+    // =====================================================
+    const AUTH_API_URL = "https://sheetdb.io/api/v1/2hbuzs32m6bvw";
+
+    const ACCOUNTS = [
+      { username: "admin",  password: "hibatullah admin", role: "admin",  name: "Administrator" },
+      { username: "hibatullah",  password: "hibatullah maju",  role: "direktur",   name: "Direktur" }
+    ];
+
+    // =====================================================
+    // VIEW TOGGLES
+    // =====================================================
+    const viewLogin = document.getElementById("view-login");
+    const viewRegister = document.getElementById("view-register");
+    
+    document.getElementById("link-show-register").addEventListener("click", (e) => {
+      e.preventDefault();
+      viewLogin.style.display = "none";
+      viewRegister.style.display = "block";
+    });
+
+    document.getElementById("link-show-login").addEventListener("click", (e) => {
+      e.preventDefault();
+      viewRegister.style.display = "none";
+      viewLogin.style.display = "block";
+    });
+
+    // =====================================================
+    // PASSWORD VISIBILITY TOGGLES
+    // =====================================================
+    const eyeIconOpen = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    const eyeIconClosed = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+    function togglePass(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btnSvg = document.querySelector(`#${btnId} svg`);
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      btnSvg.innerHTML = isHidden ? eyeIconClosed : eyeIconOpen;
+    }
+
+    document.getElementById("toggle-login-pass").addEventListener("click", () => togglePass("login-password", "toggle-login-pass"));
+    document.getElementById("toggle-reg-pass").addEventListener("click", () => togglePass("reg-password", "toggle-reg-pass"));
+
+    // =====================================================
+    // LOGIN LOGIC
+    // =====================================================
+    const loginForm = document.getElementById("login-form");
+    const btnLogin = document.getElementById("btn-login");
+    const loginErrText = document.getElementById("login-error-text");
+
+    function showLoginError(msg) {
+      loginErrText.textContent = msg;
+      loginErrText.classList.add("show");
+      document.getElementById("login-email").style.borderColor = "#ef4444";
+      document.getElementById("login-password").style.borderColor = "#ef4444";
+    }
+
+    function clearLoginError() {
+      loginErrText.classList.remove("show");
+      document.getElementById("login-email").style.borderColor = "";
+      document.getElementById("login-password").style.borderColor = "";
+    }
+
+    document.getElementById("login-email").addEventListener("input", clearLoginError);
+    document.getElementById("login-password").addEventListener("input", clearLoginError);
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearLoginError();
+
+      const username = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!username) { showLoginError("Email/Username tidak boleh kosong."); return; }
+      if (!password) { showLoginError("Password tidak boleh kosong."); return; }
+
+      btnLogin.classList.add("loading");
+      btnLogin.disabled = true;
+
+      try {
+        let account = ACCOUNTS.find(a => a.username === username && a.password === password);
+
+        // Check SheetDB API
+        if (!account) {
+          const res = await fetch(`${AUTH_API_URL}/search?username=${username}`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const userMatch = data.find(u => u["pasword "] === password || u.password === password);
+            if (userMatch) account = userMatch;
+          }
+        }
+
+        if (account) {
+          sessionStorage.setItem("spms_user", JSON.stringify({
+            username: account.username,
+            name:     account.name || account.username.split("@")[0].charAt(0).toUpperCase() + account.username.split("@")[0].slice(1),
+            role:     account.role,
+            loginAt:  new Date().toISOString()
+          }));
+
+          btnLogin.innerHTML = "<span>Berhasil! Mengalihkan...</span>";
+          btnLogin.style.background = "#10b981"; // Success green
+
+          setTimeout(() => {
+            if (account.role === "admin" || account.role === "direktur") window.location.href = "admin.html";
+            else window.location.href = "index.html";
+          }, 800);
+        } else {
+          throw new Error("Username atau password salah.");
+        }
+      } catch (err) {
+        btnLogin.classList.remove("loading");
+        btnLogin.disabled = false;
+        showLoginError("Username atau password salah. Coba lagi.");
+      }
+    });
+
+    // Check if already logged in
+    const session = sessionStorage.getItem("spms_user");
+    if (session) {
+      try {
+        const parsed = JSON.parse(session);
+        if (parsed.role === "admin" || parsed.role === "direktur") window.location.href = "admin.html";
+        else window.location.href = "index.html";
+      } catch (e) {
+        window.location.href = "index.html";
+      }
+    }
+
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) {
+        btnLogin.classList.remove("loading");
+        btnLogin.disabled = false;
+        btnLogin.innerHTML = "<span>Get Started</span><div class='spinner'></div>";
+        btnLogin.style.background = "";
+      }
+    });
+
+    // =====================================================
+    // REGISTER LOGIC
+    // =====================================================
+    let regRole = "inventaris";
+    document.querySelectorAll(".role-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".role-pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        regRole = btn.getAttribute("data-role");
+      });
+    });
+
+    const regForm = document.getElementById("register-form");
+    const btnRegister = document.getElementById("btn-register");
+    const regErrText = document.getElementById("reg-error-text");
+
+    regForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      regErrText.classList.remove("show");
+      const user = document.getElementById("reg-email").value.trim();
+      const pass = document.getElementById("reg-password").value;
+
+      if (!user || !pass) return;
+
+      btnRegister.classList.add("loading");
+      btnRegister.disabled = true;
+
+      try {
+        // Check if username already exists
+        if (ACCOUNTS.find(a => a.username === user)) {
+          throw new Error("Email/Username sudah digunakan!");
+        }
+        const checkRes = await fetch(`${AUTH_API_URL}/search?username=${user}`);
+        const existingData = await checkRes.json();
+        if (existingData && existingData.length > 0) {
+          throw new Error("Email/Username sudah digunakan!");
+        }
+
+        // Save to SheetDB (using the misspelled column 'pasword ' to match the user's Google Sheet)
+        const newUser = {
+          username: user,
+          "pasword ": pass,
+          role: regRole
+        };
+
+        const response = await fetch(AUTH_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [newUser] })
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal menyimpan ke Google Sheets! Pastikan Anda sudah membuat kolom username, password, role, name di baris pertama.");
+        }
+
+        // Show success
+        btnRegister.classList.remove("loading");
+        btnRegister.innerHTML = "<span>Akun Dibuat!</span>";
+        btnRegister.style.background = "#10b981";
+        
+        const showLoginBtn = document.getElementById("link-show-login");
+        showLoginBtn.innerHTML = "Akun siap digunakan. Klik untuk Masuk!";
+        showLoginBtn.style.color = "#10b981";
+
+      } catch (err) {
+        btnRegister.classList.remove("loading");
+        btnRegister.disabled = false;
+        regErrText.textContent = err.message || "Gagal menghubungi database.";
+        regErrText.classList.add("show");
+      }
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "school-procurement",
+  "version": "1.0.0",
+  "description": "School Procurement System with downloadable Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "build:exe": "electron-builder --win portable",
+    "build:desktop": "electron-packager . SchoolProcurement --platform=win32 --arch=x64 --out=dist/build --overwrite && node zip-desktop.js"
+  },
+  "build": {
+    "compression": "store",
+    "appId": "com.spms.app",
+    "productName": "Aplikasi SPMS",
+    "directories": {
+      "output": "app-dist"
+    },
+    "win": {
+      "target": "portable"
+    },
+    "portable": {
+      "artifactName": "Aplikasi-SPMS.exe"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bestzip": "^2.2.1",
+    "electron": "^31.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-packager": "^17.1.2"
+  }
+}

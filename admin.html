@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPMS — Sistem Pengadaan & Manajemen Sekolah</title>
+  <meta name="description" content="Sistem Pengadaan Barang untuk Kepesantrenan, SMK, dan SMP — efisien, terstruktur, dan terintegrasi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Session Guard: redirect to login if not authenticated -->
+  <script>
+    (function() {
+      const s = sessionStorage.getItem('spms_user');
+      if (!s) { window.location.replace('login.html'); }
+      else {
+        try {
+          const p = JSON.parse(s);
+          if (p.role !== 'admin' && p.role !== 'direktur') window.location.replace('index.html');
+        } catch(e) { window.location.replace('login.html'); }
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ===== SIDEBAR (Desktop) ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="logo.jpg" alt="Logo Hibatullah IIBS" class="sidebar-logo-img">
+        <div class="logo-text">
+          <span class="logo-name">SPMS</span>
+          <span class="logo-sub">Hibatullah IIBS</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-label">Menu</p>
+        <button class="nav-item active" data-tab="dashboard" id="nav-dashboard">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          </div>
+          <span>Dashboard</span>
+          <div class="nav-active-bar"></div>
+        </button>
+        <button class="nav-item" data-tab="approval" id="nav-approval">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <span>Persetujuan</span>
+          <div class="nav-active-bar"></div>
+        </button>
+        <button class="nav-item" data-tab="reports" id="nav-reports">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <span>Laporan</span>
+          <div class="nav-active-bar"></div>
+        </button>
+        <button class="nav-item" data-tab="admin-history" id="nav-admin-history">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="16 13 8 13"/><polyline points="16 17 8 17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <span>Riwayat Persetujuan</span>
+          <div class="nav-active-bar"></div>
+        </button>
+        <button class="nav-item" data-tab="admin-purchases" id="nav-admin-purchases">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </div>
+          <span>Status Pembelian</span>
+          <div class="nav-active-bar"></div>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <!-- Download Button -->
+        <a href="app-dist/Aplikasi-SPMS.exe" class="nav-item btn-download" id="btn-download" download>
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          Unduh Aplikasi
+        </a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="app-header">
+        <button class="btn-menu-mobile" id="btn-menu-mobile" title="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="header-brand">
+          <h1 class="header-title" id="header-page-title">Beranda</h1>
+        </div>
+        <div class="header-actions">
+          <div class="notif-container" id="notif-container">
+            <button class="btn-notif" id="btn-notif" title="Notifikasi">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="notif-dot" id="notif-badge" style="display: none;"></span>
+            </button>
+            <div class="notif-dropdown" id="notif-dropdown">
+              <div class="notif-header">
+                <h4>Notifikasi</h4>
+                <button class="btn-mark-read" id="btn-mark-read">Tandai sudah dibaca</button>
+              </div>
+              <div class="notif-body" id="notif-list">
+                <!-- Notifications injected here -->
+                <div class="notif-empty">Belum ada notifikasi baru.</div>
+              </div>
+            </div>
+          </div>
+          <div class="user-info" id="user-info-header">
+            <div class="user-avatar" id="user-avatar-letter">A</div>
+            <div class="user-meta">
+              <span class="user-name" id="user-display-name">Admin</span>
+              <span class="user-role" id="user-display-role">Administrator</span>
+            </div>
+          </div>
+          <button class="btn-logout" id="btn-logout" title="Keluar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Keluar</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views -->
+      <div class="views-wrapper">
+
+        <!-- ============ ADMIN HISTORY VIEW ============ -->
+        <section id="view-admin-history" class="tab-view">
+          <div class="view-page-header">
+            <h2>Riwayat Persetujuan</h2>
+            <p>Daftar barang yang sudah disetujui atau ditolak oleh Direktur.</p>
+          </div>
+          <div class="submission-list-card">
+            <div class="table-container">
+              <table class="reports-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Barang</th>
+                    <th>Unit / Dept</th>
+                    <th>Jumlah</th>
+                    <th>Total Harga</th>
+                    <th>Pengaju</th>
+                    <th>Tanda Tangan</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-history-table-body"></tbody>
+              </table>
+              <div class="empty-state" id="admin-history-empty-state" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Belum ada data riwayat persetujuan.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ ADMIN PURCHASES VIEW ============ -->
+        <section id="view-admin-purchases" class="tab-view">
+          <div class="view-page-header">
+            <h2>Status Pembelian</h2>
+            <p>Daftar barang yang sudah disetujui dan siap untuk dibeli.</p>
+          </div>
+          <div class="submission-list-card">
+            <div class="table-container">
+              <table class="reports-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Barang</th>
+                    <th>Unit / Dept</th>
+                    <th>Jumlah</th>
+                    <th>Total Harga</th>
+                    <th>Pengaju</th>
+                    <th>Tanda Tangan</th>
+                    <th>Status Pembelian</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-purchases-table-body"></tbody>
+              </table>
+              <div class="empty-state" id="admin-purchases-empty-state" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Tidak ada barang yang siap dibeli.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ DASHBOARD VIEW ============ -->
+        <section id="view-dashboard" class="tab-view active">
+          <div class="view-page-header">
+            <h2>Analisis & Statistik</h2>
+            <p>Ringkasan anggaran dan kondisi pengadaan per departemen.</p>
+          </div>
+
+          <!-- Approval Status Cards -->
+          <div class="approval-cards-row">
+            <div class="approval-card approval-card--approved">
+              <div class="approval-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="approval-card-info">
+                <span class="approval-card-num" id="dash-count-approved">0</span>
+                <span class="approval-card-label">Disetujui</span>
+              </div>
+            </div>
+            <div class="approval-card approval-card--pending">
+              <div class="approval-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="approval-card-info">
+                <span class="approval-card-num" id="dash-count-pending">0</span>
+                <span class="approval-card-label">Pending</span>
+              </div>
+            </div>
+            <div class="approval-card approval-card--rejected">
+              <div class="approval-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </div>
+              <div class="approval-card-info">
+                <span class="approval-card-num" id="dash-count-rejected">0</span>
+                <span class="approval-card-label">Ditolak</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts & Stats -->
+          <div class="dashboard-grid">
+            <div class="dashboard-chart-card">
+              <h3>Proporsi Anggaran Departemen</h3>
+              <div class="chart-container">
+                <div class="chart-donut" id="chart-donut-el">
+                  <div class="donut-center">
+                    <span class="donut-total" id="dash-total-budget">Rp 0</span>
+                    <span class="donut-label">Total Terpakai</span>
+                  </div>
+                </div>
+                <div class="chart-legends">
+                  <div class="legend-item">
+                    <span class="legend-dot color-kepesantrenan"></span>
+                    <span>Kepesantrenan (<span id="dash-pct-asrama">0%</span>)</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot color-smk"></span>
+                    <span>SMK (<span id="dash-pct-smk">0%</span>)</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot color-smp"></span>
+                    <span>SMP (<span id="dash-pct-smp">0%</span>)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dashboard-details-card">
+              <h3>Status Persediaan & Urgensi</h3>
+              <ul class="details-list">
+                <li>
+                  <span class="details-name">Sangat Urgent (Perlu Cepat)</span>
+                  <span class="details-count badge-red" id="dash-count-urgent">0 Barang</span>
+                </li>
+                <li>
+                  <span class="details-name">Normal (Dalam Proses)</span>
+                  <span class="details-count badge-blue" id="dash-count-normal">0 Barang</span>
+                </li>
+                <li>
+                  <span class="details-name">Stok di Bawah Minimum</span>
+                  <span class="details-count badge-orange" id="dash-count-low">0 Barang</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ============ APPROVAL VIEW ============ -->
+        <section id="view-approval" class="tab-view">
+          <div class="view-page-header">
+            <h2>Persetujuan Pengajuan</h2>
+            <p>Kelola daftar barang yang membutuhkan persetujuan.</p>
+          </div>
+
+          <!-- Daftar Pengajuan -->
+          <div class="submission-list-card">
+            <div class="submission-list-header">
+              <div>
+                <h3>Daftar Pengajuan Barang</h3>
+                <p>Semua barang yang diajukan beserta status persetujuannya</p>
+              </div>
+              <div class="submission-filter-wrap">
+                <select id="dash-filter-approval" class="filter-select">
+                  <option value="all">Semua Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Disetujui">Disetujui</option>
+                  <option value="Ditolak">Ditolak</option>
+                </select>
+                <select id="dash-filter-dept" class="filter-select">
+                  <option value="all">Semua Unit</option>
+                  <option value="Kepesantrenan">Kepesantrenan</option>
+                  <option value="SMK">SMK</option>
+                  <option value="SMP">SMP</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="reports-table submission-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Barang</th>
+                    <th>Unit / Dept</th>
+                    <th>Jumlah</th>
+                    <th>Total Harga</th>
+                    <th>Pengaju</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="submission-table-body"></tbody>
+              </table>
+              <div class="empty-state" id="submission-empty-state" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Belum ada pengajuan barang.</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ============ REPORTS VIEW ============ -->
+        <section id="view-reports" class="tab-view">
+          <div class="reports-header-row">
+            <div>
+              <h2>Laporan Registrasi Barang</h2>
+              <p>Daftar semua barang yang didaftarkan untuk pengadaan sekolah.</p>
+            </div>
+            <div class="action-buttons">
+              <button class="btn-secondary" id="btn-export-csv">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Ekspor CSV
+              </button>
+            </div>
+          </div>
+          <div class="filters-row">
+            <input type="text" id="search-bar" placeholder="Cari nama barang..." class="filter-input">
+            <select id="filter-dept" class="filter-select">
+              <option value="all">Semua Departemen</option>
+              <option value="Kepesantrenan">Kepesantrenan</option>
+              <option value="SMK">SMK</option>
+              <option value="SMP">SMP</option>
+            </select>
+            <select id="filter-urgency" class="filter-select">
+              <option value="all">Semua Status</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Normal">Normal</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table class="reports-table">
+              <thead>
+                <tr>
+                  <th>Nama Barang</th>
+                  <th>Tanggal</th>
+                  <th>Departemen</th>
+                  <th>Jumlah</th>
+                  <th>Harga Satuan</th>
+                  <th>Total Harga</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="reports-table-body"></tbody>
+            </table>
+            <div class="empty-state" id="table-empty-state" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p>Belum ada data barang terdaftar.</p>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- end views-wrapper -->
+
+      <!-- Bottom Nav (Mobile) -->
+      <footer class="bottom-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="approval">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Persetujuan</span>
+        </button>
+        <button class="nav-item" data-tab="reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+          <span>Laporan</span>
+        </button>
+        <button class="nav-item" data-tab="admin-history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="16 13 8 13"/><polyline points="16 17 8 17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Riwayat</span>
+        </button>
+        <button class="nav-item" data-tab="admin-purchases">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span>Pembelian</span>
+        </button>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- MODAL: Registrasi Barang -->
+  <div class="modal-backdrop" id="modal-registration">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <div class="modal-icon-wrap" id="modal-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <h3 id="modal-title">Pendaftaran Barang Baru</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="form-register-item">
+        <div id="items-container" class="items-container">
+          <!-- Item Entry Group -->
+          <div class="item-entry-group">
+            <div class="item-entry-header">
+              <span class="item-entry-title">Barang #1</span>
+              <button type="button" class="btn-remove-item" style="display: none;" title="Hapus Barang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Hapus
+              </button>
+            </div>
+            <div class="form-group">
+              <label>Nama Barang</label>
+              <input type="text" class="input-item-name" placeholder="Contoh: Kasur Busa, Kunci Pas 12mm" required>
+            </div>
+            <div class="form-group">
+              <label>Departemen / Unit</label>
+              <select class="input-item-dept" required>
+                <option value="Kepesantrenan">Kepesantrenan</option>
+                <option value="SMK">SMK</option>
+                <option value="SMP">SMP</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Jumlah (Unit)</label>
+                <input type="number" class="input-item-qty" min="1" placeholder="10" required>
+              </div>
+              <div class="form-group">
+                <label>Harga Satuan (Rp)</label>
+                <input type="number" class="input-item-price" min="0" placeholder="150000" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Status Urgensi</label>
+                <select class="input-item-urgency">
+                  <option value="Normal">Normal</option>
+                  <option value="Urgent">Urgent — Perlu Cepat</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Batas Stok Minimum</label>
+                <input type="number" class="input-item-min-stock" min="1" value="5" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-add-more" id="btn-add-more-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Barang Lain
+        </button>
+
+        <!-- Tanda Tangan -->
+        <div class="signature-section">
+          <div class="signature-divider">
+            <span>Tanda Tangan Pengaju</span>
+          </div>
+          <div class="form-group">
+            <label for="item-pengaju">Nama Lengkap Pengaju</label>
+            <input type="text" id="item-pengaju" placeholder="Contoh: Ahmad Fauzi" required>
+          </div>
+          <div class="form-group">
+            <label>Tanda Tangan Digital</label>
+            <div class="signature-pad-wrapper" id="signature-wrapper">
+              <canvas id="signature-canvas" width="500" height="130"></canvas>
+              <button type="button" class="btn-clear-signature" id="btn-clear-signature" title="Hapus Tanda Tangan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Bersihkan
+              </button>
+            </div>
+            <div class="signature-status empty" id="sig-status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Belum ada tanda tangan
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btn-cancel-modal">Batal</button>
+          <button type="submit" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Daftarkan Barang
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- MODAL: Tanda Tangan Admin -->
+  <div class="modal-backdrop" id="modal-admin-signature">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <div class="modal-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3>Tanda Tangan Persetujuan</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-admin-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="form-admin-signature">
+        <div class="signature-section" style="padding: 20px;">
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label>Tanda Tangan Pengaju</label>
+            <div style="border: 1px dashed var(--clr-border); border-radius: 8px; padding: 10px; background: #fafafa; text-align: center;">
+              <img id="pengaju-signature-preview" src="" alt="Tanda Tangan Pengaju" style="max-height: 100px; max-width: 100%; display: none;" />
+              <span id="pengaju-signature-empty" style="color: var(--clr-muted); font-size: 13px;">Tidak ada tanda tangan</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tanda Tangan Digital Admin</label>
+            <div class="signature-pad-wrapper" id="admin-signature-wrapper">
+              <canvas id="admin-signature-canvas" width="500" height="130"></canvas>
+              <button type="button" class="btn-clear-signature" id="btn-clear-admin-signature" title="Hapus Tanda Tangan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Bersihkan
+              </button>
+            </div>
+            <div class="signature-status empty" id="admin-sig-status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Belum ada tanda tangan
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btn-cancel-admin-modal">Batal</button>
+          <button type="submit" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Konfirmasi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
