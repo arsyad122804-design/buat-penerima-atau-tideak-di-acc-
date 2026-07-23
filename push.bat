@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Match mobile dashboard layout exactly 1:1 with design screenshot"
+git commit -m "Relocate mobile header user profile pill to dedicated sub-row"
 git push origin main

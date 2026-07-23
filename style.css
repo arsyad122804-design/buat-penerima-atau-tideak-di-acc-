@@ -1295,17 +1295,20 @@ body.role-staff .col-aksi {
   }
 
   .app-header {
-    background: #f8fafc;
+    background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    height: 56px;
-    padding: 0 16px;
+    height: auto;
+    min-height: 56px;
+    padding: 10px 14px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 8px 10px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
   }
 
   .btn-menu-mobile {
@@ -1314,31 +1317,66 @@ body.role-staff .col-aksi {
     justify-content: center;
     width: 36px;
     height: 36px;
-    border: none;
-    background: transparent;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     color: #0f172a;
     cursor: pointer;
     padding: 0;
+    flex-shrink: 0;
   }
 
   .btn-menu-mobile svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     stroke-width: 2.2;
   }
 
   .header-brand {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
+    position: static;
+    transform: none;
+    flex: 1;
   }
 
   .header-title {
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.2px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-notif {
+    width: 34px;
+    height: 34px;
+  }
+
+  .btn-logout {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+  }
+
+  .user-info {
+    order: 10;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    margin-top: 2px;
   }
 
   .tab-view {
