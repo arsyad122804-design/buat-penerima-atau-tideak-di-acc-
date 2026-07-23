@@ -1253,6 +1253,10 @@ body.role-staff .col-aksi {
 }
 
 @media (max-width: 860px) {
+  body {
+    background-color: #f3f5f8;
+  }
+
   .sidebar {
     display: flex;
     position: fixed;
@@ -1286,38 +1290,147 @@ body.role-staff .col-aksi {
   .main-content {
     margin-left: 0;
     width: 100%;
+    background-color: #f3f5f8;
+    min-height: 100vh;
   }
 
   .app-header {
-    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    height: 56px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--clr-card);
-    border-bottom: 1px solid var(--clr-border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
 
   .btn-menu-mobile {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: var(--clr-bg);
-    border: 1px solid var(--clr-border);
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #0f172a;
     cursor: pointer;
-    color: var(--clr-text);
+    padding: 0;
+  }
+
+  .btn-menu-mobile svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.2;
+  }
+
+  .header-brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.2px;
   }
 
   .tab-view {
-    padding: 16px 12px 90px;
+    padding: 20px 16px 90px;
+    background: #f3f5f8;
   }
 
+  .view-page-header {
+    margin-bottom: 20px;
+  }
+
+  .view-page-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .view-page-header p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  /* Card and Table matching the user screenshot 1:1 */
   .submission-list-card {
-    padding: 14px 10px;
-    border-radius: 14px;
-    margin-top: 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-top: 16px;
+  }
+
+  .table-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: none;
+    margin-bottom: 0;
+  }
+
+  .reports-table {
+    width: 100%;
+    min-width: 580px;
+    border-collapse: collapse;
+  }
+
+  .reports-table thead tr {
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .reports-table th {
+    padding: 14px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .reports-table td {
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .empty-state {
+    padding: 45px 20px;
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-state svg {
+    width: 44px;
+    height: 44px;
+    stroke: #cbd5e1;
+    stroke-width: 1.5;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
   }
 
   .bottom-nav { display: flex; }
@@ -1346,10 +1459,6 @@ body.role-staff .col-aksi {
 @media (max-width: 500px) {
   .home-hero-title { font-size: 20px; }
   .home-hero { padding: 18px 14px; }
-  .reports-table th, .reports-table td {
-    padding: 10px 10px;
-    font-size: 12px;
-  }
 }
 
 /* =====================================================
