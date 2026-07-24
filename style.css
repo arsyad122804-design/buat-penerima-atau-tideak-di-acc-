@@ -1297,18 +1297,17 @@ body.role-staff .col-aksi {
   .app-header {
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    height: auto;
-    min-height: 56px;
-    padding: 10px 14px;
+    height: 56px;
+    padding: 0 14px;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px 10px;
+    gap: 8px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   }
 
   .btn-menu-mobile {
@@ -1336,19 +1335,23 @@ body.role-staff .col-aksi {
     position: static;
     transform: none;
     flex: 1;
+    min-width: 0;
   }
 
   .header-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
   }
 
@@ -1358,7 +1361,7 @@ body.role-staff .col-aksi {
   }
 
   .btn-logout {
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 12px;
     border-radius: 20px;
     background: #ffffff;
@@ -1367,16 +1370,7 @@ body.role-staff .col-aksi {
   }
 
   .user-info {
-    order: 10;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    margin-top: 2px;
+    display: none !important;
   }
 
   .tab-view {
