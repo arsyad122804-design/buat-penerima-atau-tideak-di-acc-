@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Enable smooth horizontal drag-to-scroll and visible scrollbars for table containers"
+git commit -m "Enhance mobile registration modal design for HP display"
 git push origin main
