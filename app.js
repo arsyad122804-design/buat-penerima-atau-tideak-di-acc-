@@ -984,6 +984,13 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // --- Download Links Verification ---
+  document.querySelectorAll("a[download]").forEach(link => {
+    link.addEventListener("click", (e) => {
+      // Allow default browser download action
+    });
+  });
+
   // --- Notifications ---
   const btnNotif = document.getElementById("btn-notif");
   const notifDropdown = document.getElementById("notif-dropdown");
