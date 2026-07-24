@@ -317,22 +317,27 @@
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
     }
+    .download-buttons-group {
+      display: flex;
+      gap: 10px;
+    }
     .btn-download-app {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 12px 18px;
+      gap: 8px;
+      flex: 1;
+      padding: 12px 14px;
       background: rgba(255, 146, 64, 0.12);
       border: 1px solid rgba(255, 146, 64, 0.35);
       border-radius: 12px;
       color: #ff9240;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 700;
       text-decoration: none;
       transition: all 0.3s ease;
       cursor: pointer;
+      white-space: nowrap;
     }
     .btn-download-app:hover {
       background: #ff9240;
@@ -341,9 +346,20 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(255, 146, 64, 0.3);
     }
+    .btn-download-zip {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #3b82f6;
+    }
+    .btn-download-zip:hover {
+      background: #3b82f6;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
     .btn-download-app svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
 
     /* Role Pills for Register */
@@ -441,14 +457,24 @@
 
         <!-- Download Desktop App Banner -->
         <div class="download-app-banner">
-          <a href="Aplikasi-SPMS.exe" class="btn-download-app" download="Aplikasi-SPMS.exe" title="Unduh Aplikasi Desktop Windows">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Unduh Aplikasi Desktop Windows (.exe)</span>
-          </a>
+          <div class="download-buttons-group">
+            <a href="Aplikasi-SPMS.exe" class="btn-download-app" download="Aplikasi-SPMS.exe" title="Unduh File Aplikasi Windows (.exe)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Aplikasi (.exe)</span>
+            </a>
+            <a href="Aplikasi-SPMS.zip" class="btn-download-app btn-download-zip" download="Aplikasi-SPMS.zip" title="Unduh File Zip (.zip)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>File Zip (.zip)</span>
+            </a>
+          </div>
         </div>
       </div>
 

@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "electron .",
+    "serve": "node server.js",
     "start": "electron .",
     "build:exe": "electron-builder --win portable",
     "build:desktop": "electron-packager . SchoolProcurement --platform=win32 --arch=x64 --out=dist/build --overwrite && node zip-desktop.js"

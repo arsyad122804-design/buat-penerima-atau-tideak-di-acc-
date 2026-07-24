@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Update download links to point directly to Aplikasi-SPMS.exe"
+git commit -m "Add dual download options (.exe and .zip) and local web download server"
 git push origin main
