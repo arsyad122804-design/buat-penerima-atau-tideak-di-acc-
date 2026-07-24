@@ -997,15 +997,38 @@ img { display: block; max-width: 100%; }
   background: var(--clr-card);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-md);
-  overflow-x: auto;
+  overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   box-shadow: var(--shadow-xs);
   margin-bottom: 16px;
+  cursor: grab;
+}
+
+.table-container.active-drag {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* Custom Visible Scrollbar for Horizontal Scroll */
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .reports-table {
   width: 100%;
-  min-width: 640px;
+  min-width: 680px;
   border-collapse: collapse;
 }
 
@@ -1410,15 +1433,16 @@ body.role-staff .col-aksi {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    overflow-x: auto;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
     box-shadow: none;
     margin-bottom: 0;
   }
 
   .reports-table {
     width: 100%;
-    min-width: 580px;
+    min-width: 680px;
     border-collapse: collapse;
   }
 
