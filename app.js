@@ -215,6 +215,16 @@ async function fetchItems() {
     }
   });
 
+  // Ensure default items if none found
+  if (items.length === 0) {
+    items = [
+      { id: 1, name: "Proyektor Epson EB-E500", dept: "SMK", qty: 2, price: 5500000, urgency: "Urgent", minStock: 1, pengaju: "Ahmad Staff", wa: "081234567890", approval: "Pending", pembelian: "Belum Dibeli", tanggal: "25 Jul 2026" },
+      { id: 2, name: "Buku Paket Kurikulum Merdeka", dept: "SMP", qty: 50, price: 65000, urgency: "Normal", minStock: 10, pengaju: "Ustadz Ali", wa: "081949514329", approval: "Disetujui Manager", pembelian: "Belum Dibeli", tanggal: "24 Jul 2026" },
+      { id: 3, name: "Kasur Busa Inoac Asrama", dept: "Kepesantrenan", qty: 10, price: 850000, urgency: "Urgent", minStock: 2, pengaju: "Ustadz Ali", wa: "081949514329", approval: "Disetujui", pembelian: "Sudah Dibeli", tanggal: "23 Jul 2026" }
+    ];
+    localStorage.setItem("spms_items", JSON.stringify(items));
+  }
+
   if (t) t.textContent = oldT;
   updateUI();
 }
@@ -912,23 +922,24 @@ function renderTable() {
   if (tableEmptyState) tableEmptyState.style.display = "none";
 
   const approvalMeta = {
-    "Disetujui": { cls: "approval-badge--approved", icon: "✓" },
-    "Pending":   { cls: "approval-badge--pending",  icon: "⏳" },
-    "Ditolak":   { cls: "approval-badge--rejected", icon: "✕" }
+    "Disetujui":          { cls: "approval-badge--approved", icon: "✓" },
+    "Disetujui Direktur": { cls: "approval-badge--approved", icon: "✓" },
+    "Disetujui Manager":  { cls: "approval-badge--approved", icon: "👔" },
+    "Pending":            { cls: "approval-badge--pending",  icon: "⏳" },
+    "Ditolak":            { cls: "approval-badge--rejected", icon: "✕" }
   };
 
   filtered.forEach(item => {
     const tr = document.createElement("tr");
     const total = item.price * item.qty;
     const isLow = item.qty < item.minStock;
-    let meta = approvalMeta[item.approval || "Pending"];
-    let label = item.approval || "Pending";
-    if (item.approval === "Disetujui" && item.pembelian === "Sudah Dibeli") {
+    const approval = item.approval || "Pending";
+    let meta = approvalMeta[approval] || { cls: "approval-badge--pending", icon: "⏳" };
+    let label = approval;
+
+    if (item.pembelian === "Sudah Dibeli") {
       meta = { cls: "approval-badge--approved", icon: "✓" };
       label = "Sudah Dibeli";
-    } else if (item.approval === "Disetujui") {
-      meta = { cls: "approval-badge--pending", icon: "⏳" };
-      label = "Disetujui (Blm Beli)";
     }
 
     tr.innerHTML = `
