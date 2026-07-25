@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Auto send WhatsApp notification to Inventaris user on item approval or rejection"
+git commit -m "Ensure synchronous direct WhatsApp trigger bypassing pop-up blockers"
 git push origin main

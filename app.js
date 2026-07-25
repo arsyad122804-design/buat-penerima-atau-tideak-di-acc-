@@ -42,11 +42,17 @@ window.sendWaNotification = function(id, action) {
   const item = items.find(i => i.id == id);
   if (!item) return;
 
-  const waRaw = item.wa || (typeof getSavedProfile === "function" && getSavedProfile().wa) || "";
-  const waClean = waRaw.replace(/[^0-9]/g, "");
+  // Retrieve WA number from item, or fallback profile
+  let waRaw = item.wa;
+  if (!waRaw && typeof getSavedProfile === "function") {
+    const prof = getSavedProfile();
+    if (prof && prof.wa) waRaw = prof.wa;
+  }
+
+  const waClean = (waRaw || "").replace(/[^0-9]/g, "");
 
   if (!waClean) {
-    console.warn("Nomor WhatsApp pengaju belum diisi untuk barang ID:", id);
+    showToast("⚠️ Nomor WA pengaju tidak tersedia untuk dikirimi pesan!");
     return;
   }
 
@@ -62,7 +68,15 @@ window.sendWaNotification = function(id, action) {
   const message = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Bapak/Ibu"},\n\nNotifikasi Status Pengajuan Barang:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *${statusIcon}*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
 
   const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-  window.open(waUrl, "_blank");
+
+  // Use synchronous anchor click to bypass pop-up blockers in Browser/Electron
+  const link = document.createElement("a");
+  link.href = waUrl;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 async function fetchItems() {
@@ -1101,12 +1115,9 @@ function handleAdminSignatureConfirm(e) {
   if (modal) modal.classList.remove("open");
   showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
 
-  // Check if WhatsApp notification should be sent
-  const checkWa = document.getElementById("check-send-wa");
-  if (checkWa && checkWa.checked && currentApprovalId) {
-    setTimeout(() => {
-      sendWaNotification(currentApprovalId, action);
-    }, 400);
+  // Automatically trigger WhatsApp notification synchronously
+  if (currentApprovalId) {
+    sendWaNotification(currentApprovalId, action);
   }
 
   // 3. Background sync to SheetDB
