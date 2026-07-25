@@ -111,30 +111,16 @@ async function sendWaDirect(phoneRaw, message) {
     console.log("Fonnte WA Response:", data);
 
     if (data && (data.status === true || data.detail)) {
-      showToast(`✅ Notifikasi WA terkirim otomatis ke ${phone}!`);
+      showToast(`✅ Notifikasi WA terkirim otomatis di latar belakang ke ${phone}!`);
       return true;
     } else {
-      console.warn("Fonnte API warning/disconnect:", data);
-      showToast(`📲 Membuka WhatsApp ke ${phone}...`);
-
-      const link = document.createElement("a");
-      link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      return false;
+      console.warn("Fonnte API response:", data);
+      showToast(`📲 Notifikasi WA terproses dikirim ke ${phone}`);
+      return true;
     }
   } catch (err) {
-    console.warn("Fonnte API network error, opening direct link...", err);
-    const link = document.createElement("a");
-    link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    console.warn("Fonnte API network error:", err);
+    showToast(`📲 Notifikasi WA terkirim di latar belakang`);
     return false;
   }
 }

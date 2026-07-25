@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Update WhatsApp notification flow strictly matching user 3-step pipeline: Inventaris -> Direktur & Manager -> Admin -> Inventaris"
+git commit -m "Completely disable opening WhatsApp links to enforce 100% silent background API sending"
 git push origin main
