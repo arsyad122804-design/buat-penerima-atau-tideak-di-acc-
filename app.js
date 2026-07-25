@@ -46,6 +46,10 @@ function getRoleWaNumber(targetRole) {
     const fallbackKeys = [
       "spms_profile_" + roleClean,
       "spms_profile_" + (roleClean === "direktur" ? "hibatullah" : roleClean === "manager" ? "manager" : "admin"),
+      "spms_profile_direktur",
+      "spms_profile_manager",
+      "spms_profile_admin",
+      "spms_profile_hibatullah",
       "spms_profile_default",
       "spms_profile"
     ];
