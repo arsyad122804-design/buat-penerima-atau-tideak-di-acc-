@@ -1518,10 +1518,18 @@ body.role-staff .col-aksi {
   }
 
   .modal-card {
+    width: 100%;
     max-width: 100%;
-    border-radius: 28px 28px 20px 20px;
+    border-radius: 24px 24px 20px 20px;
     max-height: 93vh;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+    overflow-x: hidden;
+  }
+
+  .signature-pad-wrapper canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    touch-action: none;
   }
 
   .modal-header {

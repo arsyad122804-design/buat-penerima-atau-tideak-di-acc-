@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Enhance notification system for approval by Direktur/Manager and purchase by Admin"
+git commit -m "Fix mobile modal layout and button overflow in approval dialog"
 git push origin main
