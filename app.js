@@ -225,8 +225,40 @@ async function fetchItems() {
     }
   });
 
+// Force clear database as requested by user
+localStorage.removeItem("spms_items");
+localStorage.removeItem("spms_local_new_items");
+localStorage.removeItem("spms_status_overrides");
+localStorage.setItem("spms_db_cleared", "true");
+items = [];
+
+window.clearAllDatabaseData = async function() {
+  if (!confirm("⚠️ Apakah Anda yakin ingin MENGHAPUS SELURUH DATA pengajuan barang di database? Data yang dihapus tidak dapat dikembalikan.")) {
+    return;
+  }
+  localStorage.removeItem("spms_items");
+  localStorage.removeItem("spms_local_new_items");
+  localStorage.removeItem("spms_status_overrides");
+  localStorage.setItem("spms_db_cleared", "true");
+  items = [];
+  updateUI();
+  showToast("🗑️ Seluruh data pengajuan di database telah BERHASIL DIHAPUS!");
+
+  try {
+    await fetch(API_URL, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    console.warn("SheetDB delete warning", e);
+  }
+};
+
   // Ensure default items if none found
-  if (items.length === 0) {
+  const isCleared = localStorage.getItem("spms_db_cleared") === "true";
+  if (isCleared) {
+    items = [];
+  } else if (items.length === 0) {
     items = [
       { id: 1, name: "Proyektor Epson EB-E500", dept: "SMK", qty: 2, price: 5500000, urgency: "Urgent", minStock: 1, pengaju: "Ahmad Staff", wa: "081234567890", approval: "Pending", pembelian: "Belum Dibeli", tanggal: "25 Jul 2026" },
       { id: 2, name: "Buku Paket Kurikulum Merdeka", dept: "SMP", qty: 50, price: 65000, urgency: "Normal", minStock: 10, pengaju: "Ustadz Ali", wa: "081949514329", approval: "Disetujui Manager", pembelian: "Belum Dibeli", tanggal: "24 Jul 2026" },
