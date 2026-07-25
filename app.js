@@ -359,12 +359,15 @@ function openModal(department = "Kepesantrenan") {
   }
 
   if (modalRegistration) modalRegistration.classList.add("open");
+
+  // 1. Init signature pad first (clones canvas to clear event listeners)
   initSignaturePad("signature-canvas", "signature-wrapper", "sig-status", "btn-clear-signature");
   
-  // Reset signature canvas & status
+  // 2. Fetch fresh live canvas in DOM
   const canvas = document.getElementById("signature-canvas");
   const wrapper = document.getElementById("signature-wrapper");
   const sigStatus = document.getElementById("sig-status");
+
   if (canvas) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -378,29 +381,34 @@ function openModal(department = "Kepesantrenan") {
       Belum ada tanda tangan`;
   }
 
-  // Auto-fill profile name & signature if saved
+  // 3. Auto-fill profile name & signature onto live DOM canvas
   try {
     const savedProfile = JSON.parse(localStorage.getItem("spms_profile") || "{}");
     const inputPengaju = document.getElementById("item-pengaju");
     if (savedProfile.fullname && inputPengaju) {
       inputPengaju.value = savedProfile.fullname;
     }
-    if (savedProfile.signature && canvas) {
-      const img = new Image();
-      img.onload = function() {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.dataset.signed = "true";
-        if (wrapper) wrapper.classList.add("has-signature");
-        if (sigStatus) {
-          sigStatus.className = "signature-status filled";
-          sigStatus.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Tanda tangan terisi otomatis dari Profil`;
-        }
-      };
-      img.src = savedProfile.signature;
+    if (savedProfile.signature) {
+      const activeCanvas = document.getElementById("signature-canvas");
+      if (activeCanvas) {
+        const img = new Image();
+        img.onload = function() {
+          const ctx = activeCanvas.getContext("2d");
+          ctx.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
+          ctx.drawImage(img, 0, 0, activeCanvas.width, activeCanvas.height);
+          activeCanvas.dataset.signed = "true";
+          const activeWrapper = document.getElementById("signature-wrapper");
+          const activeStatus = document.getElementById("sig-status");
+          if (activeWrapper) activeWrapper.classList.add("has-signature");
+          if (activeStatus) {
+            activeStatus.className = "signature-status filled";
+            activeStatus.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Tanda tangan terisi otomatis dari Profil`;
+          }
+        };
+        img.src = savedProfile.signature;
+      }
     }
   } catch (e) {}
 }
@@ -1045,14 +1053,14 @@ if (btnExportCSV) {
 // =====================================================
 function initProfileView() {
   const formProfile = document.getElementById("form-user-profile");
+  if (!formProfile) return;
+
+  initSignaturePad("profile-signature-canvas", "profile-signature-wrapper", "profile-sig-status", "btn-clear-profile-signature");
+
   const inputFullname = document.getElementById("profile-fullname");
   const canvasProfile = document.getElementById("profile-signature-canvas");
   const wrapperProfile = document.getElementById("profile-signature-wrapper");
   const statusProfile = document.getElementById("profile-sig-status");
-
-  if (!formProfile) return;
-
-  initSignaturePad("profile-signature-canvas", "profile-signature-wrapper", "profile-sig-status", "btn-clear-profile-signature");
 
   // Load saved profile data
   try {
@@ -1066,16 +1074,21 @@ function initProfileView() {
     if (savedProfile.signature && canvasProfile) {
       const img = new Image();
       img.onload = function() {
-        const ctx = canvasProfile.getContext("2d");
-        ctx.clearRect(0, 0, canvasProfile.width, canvasProfile.height);
-        ctx.drawImage(img, 0, 0, canvasProfile.width, canvasProfile.height);
-        canvasProfile.dataset.signed = "true";
-        if (wrapperProfile) wrapperProfile.classList.add("has-signature");
-        if (statusProfile) {
-          statusProfile.className = "signature-status filled";
-          statusProfile.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Tanda tangan profil tersimpan`;
+        const activeProfCanvas = document.getElementById("profile-signature-canvas");
+        if (activeProfCanvas) {
+          const ctx = activeProfCanvas.getContext("2d");
+          ctx.clearRect(0, 0, activeProfCanvas.width, activeProfCanvas.height);
+          ctx.drawImage(img, 0, 0, activeProfCanvas.width, activeProfCanvas.height);
+          activeProfCanvas.dataset.signed = "true";
+          const activeProfWrapper = document.getElementById("profile-signature-wrapper");
+          const activeProfStatus = document.getElementById("profile-sig-status");
+          if (activeProfWrapper) activeProfWrapper.classList.add("has-signature");
+          if (activeProfStatus) {
+            activeProfStatus.className = "signature-status filled";
+            activeProfStatus.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Tanda tangan profil tersimpan`;
+          }
         }
       };
       img.src = savedProfile.signature;
@@ -1091,7 +1104,8 @@ function initProfileView() {
       return;
     }
 
-    const signatureData = canvasProfile && !isCanvasBlank(canvasProfile) ? canvasProfile.toDataURL() : "";
+    const curProfCanvas = document.getElementById("profile-signature-canvas");
+    const signatureData = curProfCanvas && !isCanvasBlank(curProfCanvas) ? curProfCanvas.toDataURL() : "";
 
     const profileData = {
       fullname: fullname,
