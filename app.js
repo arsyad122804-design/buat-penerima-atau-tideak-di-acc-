@@ -11,62 +11,19 @@ let currentApprovalAction = null;
 function getUserProfileKey() {
   try {
     const session = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
-    if (session.username) return "spms_profile_" + session.username;
-    if (session.role) return "spms_profile_" + session.role;
+    if (session.username) return "spms_profile_" + session.username.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    if (session.role) return "spms_profile_" + session.role.toLowerCase();
   } catch(e) {}
   return "spms_profile_default";
 }
 
-function getAnySavedProfileSignature() {
+function getSavedProfile() {
   try {
     const profKey = getUserProfileKey();
     let saved = JSON.parse(localStorage.getItem(profKey) || "{}");
-    if (saved && saved.signature) return saved.signature;
-
-    const fallbackKeys = [
-      "spms_profile",
-      "spms_profile_hibatullah",
-      "spms_profile_direktur",
-      "spms_profile_admin",
-      "spms_profile_default"
-    ];
-
-    for (const key of fallbackKeys) {
-      const data = JSON.parse(localStorage.getItem(key) || "{}");
-      if (data && data.signature) return data.signature;
-    }
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.startsWith("spms_profile")) {
-        const data = JSON.parse(localStorage.getItem(k) || "{}");
-        if (data && data.signature) return data.signature;
-      }
-    }
-  } catch (e) {}
-  return "";
-}
-
-function getAnySavedProfileName() {
-  try {
-    const profKey = getUserProfileKey();
-    let saved = JSON.parse(localStorage.getItem(profKey) || "{}");
-    if (saved && saved.fullname) return saved.fullname;
-
-    const fallbackKeys = [
-      "spms_profile",
-      "spms_profile_hibatullah",
-      "spms_profile_direktur",
-      "spms_profile_admin",
-      "spms_profile_default"
-    ];
-
-    for (const key of fallbackKeys) {
-      const data = JSON.parse(localStorage.getItem(key) || "{}");
-      if (data && data.fullname) return data.fullname;
-    }
-  } catch (e) {}
-  return "";
+    if (saved && (saved.fullname || saved.signature || saved.wa)) return saved;
+  } catch(e) {}
+  return {};
 }
 
 function saveLocalOverrides(id, approval, adminSignature, pembelian) {
@@ -442,15 +399,15 @@ function openModal(department = "Kepesantrenan") {
       Belum ada tanda tangan`;
   }
 
-  // 3. Auto-fill profile name & signature onto live DOM canvas
+  // 3. Auto-fill profile name, wa & signature onto live DOM canvas
   try {
-    const name = getAnySavedProfileName();
+    const prof = getSavedProfile();
     const inputPengaju = document.getElementById("item-pengaju");
-    if (name && inputPengaju) {
-      inputPengaju.value = name;
-    }
-    const sig = getAnySavedProfileSignature();
-    if (sig) {
+    const inputWa = document.getElementById("item-wa");
+    if (prof.fullname && inputPengaju) inputPengaju.value = prof.fullname;
+    if (prof.wa && inputWa) inputWa.value = prof.wa;
+
+    if (prof.signature) {
       const activeCanvas = document.getElementById("signature-canvas");
       if (activeCanvas) {
         const img = new Image();
@@ -469,7 +426,7 @@ function openModal(department = "Kepesantrenan") {
               Tanda tangan terisi otomatis dari Profil`;
           }
         };
-        img.src = sig;
+        img.src = prof.signature;
       }
     }
   } catch (e) {}
@@ -578,6 +535,7 @@ if (formRegisterItem) {
 
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const pengajuName = document.getElementById("item-pengaju").value.trim();
+    const waNumber    = document.getElementById("item-wa") ? document.getElementById("item-wa").value.trim() : "";
     const signatureData = canvas ? canvas.toDataURL() : "";
     
     const entries = document.querySelectorAll(".item-entry-group");
@@ -603,6 +561,7 @@ if (formRegisterItem) {
           "URGENSI":  urgency,
           "MIN STOCK": minStock,
           "PENGAJU":  pengajuName,
+          "WA":       waNumber,
           "TANDA TANGAN": signatureData,
           "PERSETUJUAN ": "Pending",
           "TANGGAL": today
@@ -928,7 +887,9 @@ function renderSubmissionTable() {
       apv = { cls: "approval-badge--pending", icon: "⏳" };
       apvLabel = "Disetujui (Blm Beli)";
     }
-    const pengaju  = item.pengaju || "—";
+    const rawPengaju = item.pengaju || "—";
+    const waClean    = (item.wa || "").replace(/[^0-9]/g, "");
+    const pengaju    = waClean ? `<a href="https://wa.me/${waClean}" target="_blank" style="color:#059669; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="Chat via WhatsApp">📱 ${rawPengaju}</a>` : rawPengaju;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -999,8 +960,8 @@ function renderSubmissionTable() {
 
       // Auto-fill Direktur / Admin saved signature from their profile if available!
       try {
-        const sig = getAnySavedProfileSignature();
-        if (sig) {
+        const prof = getSavedProfile();
+        if (prof.signature) {
           const img = new Image();
           img.onload = function() {
             const activeAdminCanvas = document.getElementById("admin-signature-canvas");
@@ -1020,7 +981,7 @@ function renderSubmissionTable() {
               }
             }
           };
-          img.src = sig;
+          img.src = prof.signature;
         }
       } catch (e) {}
     }
@@ -1156,27 +1117,25 @@ function initProfileView() {
   initSignaturePad("profile-signature-canvas", "profile-signature-wrapper", "profile-sig-status", "btn-clear-profile-signature");
 
   const inputFullname = document.getElementById("profile-fullname");
+  const inputWa       = document.getElementById("profile-wa");
   const canvasProfile = document.getElementById("profile-signature-canvas");
   const wrapperProfile = document.getElementById("profile-signature-wrapper");
   const statusProfile = document.getElementById("profile-sig-status");
 
   // Load saved profile data
   try {
-    const profKey = getUserProfileKey();
-    const savedName = getAnySavedProfileName();
-    const savedSig = getAnySavedProfileSignature();
+    const saved = getSavedProfile();
     const sessionUser = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
 
-    let defaultName = savedName || sessionUser.name || "";
+    let defaultName = saved.fullname || sessionUser.name || "";
     if (!defaultName && sessionUser.role === "direktur") defaultName = "Hibatullah (Direktur)";
     else if (!defaultName && sessionUser.role === "manager") defaultName = "Manager SPMS";
     else if (!defaultName && sessionUser.role === "admin") defaultName = "Admin SPMS";
 
-    if (inputFullname) {
-      inputFullname.value = defaultName;
-    }
+    if (inputFullname) inputFullname.value = defaultName;
+    if (inputWa)       inputWa.value       = saved.wa || "";
 
-    if (savedSig) {
+    if (saved.signature) {
       const img = new Image();
       img.onload = function() {
         const activeProfCanvas = document.getElementById("profile-signature-canvas");
@@ -1196,7 +1155,7 @@ function initProfileView() {
           }
         }
       };
-      img.src = savedSig;
+      img.src = saved.signature;
     }
   } catch (e) {}
 
@@ -1204,6 +1163,7 @@ function initProfileView() {
   formProfile.addEventListener("submit", (e) => {
     e.preventDefault();
     const fullname = inputFullname ? inputFullname.value.trim() : "";
+    const wa       = inputWa ? inputWa.value.trim() : "";
     if (!fullname) {
       showToast("⚠️ Harap masukkan nama lengkap Anda!");
       return;
@@ -1214,10 +1174,11 @@ function initProfileView() {
 
     const profileData = {
       fullname: fullname,
+      wa: wa,
       signature: signatureData
     };
 
-    localStorage.setItem("spms_profile", JSON.stringify(profileData));
+    localStorage.setItem(getUserProfileKey(), JSON.stringify(profileData));
     showToast("✅ Profil & Tanda Tangan berhasil disimpan!");
   });
 }
