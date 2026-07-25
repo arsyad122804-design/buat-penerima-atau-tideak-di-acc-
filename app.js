@@ -1124,7 +1124,12 @@ function handleAdminSignatureConfirm(e) {
   const adminSignatureData = canvas ? canvas.toDataURL() : "";
   const itemToApprove = items.find(i => i.id == currentApprovalId);
   const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
-  const action = currentApprovalAction || "Disetujui";
+  const session = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
+  let action = currentApprovalAction || "Disetujui";
+  if (action === "Disetujui") {
+    if (session.role === "manager") action = "Disetujui Manager";
+    else if (session.role === "direktur") action = "Disetujui";
+  }
 
   // 1. Instant local update
   if (itemToApprove) {
@@ -1436,7 +1441,8 @@ window.addEventListener("DOMContentLoaded", () => {
       const readNotifs = JSON.parse(localStorage.getItem(`read_notifs_${session.role}`) || "[]");
       let newNotifs = [];
 
-      if (session.role === "direktur" || session.role === "manager") {
+      if (session.role === "manager") {
+        // Manager sees Pending items from Inventaris
         newNotifs = items.filter(i => i.approval === "Pending").map(i => ({
           id: i.id,
           title: "Pengajuan Baru",
@@ -1444,29 +1450,61 @@ window.addEventListener("DOMContentLoaded", () => {
           icon: "⏳", cls: "notif-icon--pending",
           isRead: readNotifs.includes(i.id)
         }));
+      } else if (session.role === "direktur") {
+        // Direktur sees items approved by Manager OR Pending items
+        newNotifs = items.filter(i => i.approval === "Disetujui Manager" || i.approval === "Pending").map(i => ({
+          id: i.id,
+          title: i.approval === "Disetujui Manager" ? "Persetujuan Manager" : "Pengajuan Baru",
+          desc: i.approval === "Disetujui Manager" 
+            ? `Manager telah menyetujui ${i.name}. Menunggu persetujuan Direktur.` 
+            : `${i.pengaju || 'Inventaris'} mengajukan ${i.qty} Pcs ${i.name}`,
+          icon: "👔", cls: "notif-icon--approved",
+          isRead: readNotifs.includes(i.id)
+        }));
       } else if (session.role === "admin") {
-        newNotifs = items.filter(i => i.approval === "Disetujui" && i.pembelian !== "Sudah Dibeli").map(i => ({
+        // Admin sees items approved by Direktur that are ready to purchase
+        newNotifs = items.filter(i => (i.approval === "Disetujui" || i.approval === "Disetujui Direktur") && i.pembelian !== "Sudah Dibeli").map(i => ({
           id: i.id,
           title: "Siap Dibeli",
-          desc: `Direktur / Manager menyetujui pengadaan ${i.qty} Pcs ${i.name}`,
+          desc: `Direktur telah menyetujui pengadaan ${i.qty} Pcs ${i.name}`,
           icon: "🛒", cls: "notif-icon--approved",
           isRead: readNotifs.includes(i.id)
         }));
       } else {
-        // Inventaris / Staff
+        // Inventaris / Staff: Sees when item is approved by Manager/Direktur or bought by Admin
         newNotifs = items.filter(i => i.approval !== "Pending").map(i => {
           const isBought = i.pembelian === "Sudah Dibeli";
-          const isApproved = i.approval === "Disetujui";
+          const isApprovedDir = i.approval === "Disetujui" || i.approval === "Disetujui Direktur";
+          const isApprovedMgr = i.approval === "Disetujui Manager";
+
+          let title = "Respon Pengajuan";
+          let desc = `Pengajuan ${i.name} ${i.approval}`;
+          let icon = "📌";
+
+          if (isBought) {
+            title = "Barang Sudah Dibeli Admin! 🎉";
+            desc = `Pengajuan "${i.name}" (${i.qty} Pcs) telah selesai dibelikan oleh Admin.`;
+            icon = "✅";
+          } else if (isApprovedDir) {
+            title = "Disetujui Direktur! ✔️";
+            desc = `Pengajuan "${i.name}" disetujui Direktur & diteruskan ke Admin untuk dibeli.`;
+            icon = "✔️";
+          } else if (isApprovedMgr) {
+            title = "Disetujui Manager! 👔";
+            desc = `Pengajuan "${i.name}" disetujui Manager & diteruskan ke Direktur.`;
+            icon = "👔";
+          } else {
+            title = "Pengajuan Ditolak ✕";
+            desc = `Pengajuan "${i.name}" ditolak oleh Manajemen.`;
+            icon = "❌";
+          }
+
           return {
-            id: i.id,
-            title: isBought ? "Barang Sudah Dibeli Admin!" : (isApproved ? "Diterima Direktur / Manager!" : "Ditolak Direktur / Manager"),
-            desc: isBought 
-              ? `Pengajuan ${i.name} (${i.qty} Pcs) telah selesai dibelikan oleh Admin.` 
-              : (isApproved 
-                ? `Pengajuan ${i.name} Anda telah DITERIMA & DISETUJUI oleh Direktur / Manager.` 
-                : `Pengajuan ${i.name} Anda ditolak oleh Direktur / Manager.`),
-            icon: isBought ? "✅" : (isApproved ? "✔️" : "❌"),
-            cls: isBought ? "notif-icon--approved" : (isApproved ? "notif-icon--approved" : "notif-icon--pending"),
+            id: title,
+            title: title,
+            desc: desc,
+            icon: icon,
+            cls: (isBought || isApprovedDir || isApprovedMgr) ? "notif-icon--approved" : "notif-icon--pending",
             isRead: readNotifs.includes(i.id)
           };
         });
