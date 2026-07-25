@@ -2085,3 +2085,30 @@ body.role-staff .col-aksi {
   color: var(--clr-muted);
   font-size: 13px;
 }
+
+/* Mobile & Tablet Responsive Notification Dropdown */
+@media (max-width: 900px) {
+  .notif-dropdown {
+    position: fixed !important;
+    top: 62px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    z-index: 99999 !important;
+    border: 1px solid var(--clr-border) !important;
+  }
+  .notif-header {
+    padding: 14px 16px !important;
+  }
+  .notif-header h4 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }
+  .btn-mark-read {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
+}
