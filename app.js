@@ -339,6 +339,36 @@ if (modalRegistration) {
   });
 }
 
+// Helper for Rupiah Currency Input Formatting (e.g. 150000 -> Rp 150.000)
+function formatRupiahInput(value) {
+  if (!value) return "";
+  let numberString = value.replace(/[^,\d]/g, "").toString();
+  let split = numberString.split(",");
+  let sisa = split[0].length % 3;
+  let rupiah = split[0].substr(0, sisa);
+  let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+  if (ribuan) {
+    let separator = sisa ? "." : "";
+    rupiah += separator + ribuan.join(".");
+  }
+
+  rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+  return rupiah ? "Rp " + rupiah : "";
+}
+
+function parseRupiah(value) {
+  if (!value) return 0;
+  return parseFloat(value.replace(/[^0-9]/g, "")) || 0;
+}
+
+// Live formatting event listener for all price inputs
+document.addEventListener("input", function(e) {
+  if (e.target && e.target.classList.contains("input-item-price")) {
+    e.target.value = formatRupiahInput(e.target.value);
+  }
+});
+
 // Add more items logic
 const btnAddMoreItem = document.getElementById("btn-add-more-item");
 if (btnAddMoreItem) {
@@ -349,11 +379,7 @@ if (btnAddMoreItem) {
     
     // Clear inputs in cloned node
     newEntry.querySelectorAll("input").forEach(input => {
-      if (input.type === "number" && input.className.includes("min-stock")) {
-        input.value = 5;
-      } else {
-        input.value = "";
-      }
+      input.value = "";
     });
     
     // Update title
@@ -407,9 +433,10 @@ if (formRegisterItem) {
       const name = entry.querySelector(".input-item-name").value.trim();
       const dept = entry.querySelector(".input-item-dept").value;
       const qty = parseInt(entry.querySelector(".input-item-qty").value) || 0;
-      const price = parseFloat(entry.querySelector(".input-item-price").value) || 0;
+      const priceRaw = entry.querySelector(".input-item-price").value;
+      const price = parseRupiah(priceRaw);
       const urgency = entry.querySelector(".input-item-urgency").value;
-      const minStock = parseInt(entry.querySelector(".input-item-min-stock").value) || 0;
+      const minStock = 5;
       
       if (name && qty > 0) {
         newItems.push({

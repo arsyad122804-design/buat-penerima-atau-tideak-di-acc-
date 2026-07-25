@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Enhance mobile registration modal design for HP display"
+git commit -m "Remove Batas Stok Minimum field and add live Rupiah formatting with thousand separators"
 git push origin main
