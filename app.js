@@ -8,6 +8,15 @@ let items = [];
 let currentApprovalId = null;
 let currentApprovalAction = null;
 
+function getUserProfileKey() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
+    if (session.username) return "spms_profile_" + session.username;
+    if (session.role) return "spms_profile_" + session.role;
+  } catch(e) {}
+  return "spms_profile_default";
+}
+
 function saveLocalOverrides(id, approval, adminSignature, pembelian) {
   try {
     const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
@@ -383,7 +392,8 @@ function openModal(department = "Kepesantrenan") {
 
   // 3. Auto-fill profile name & signature onto live DOM canvas
   try {
-    const savedProfile = JSON.parse(localStorage.getItem("spms_profile") || "{}");
+    const profKey = getUserProfileKey();
+    const savedProfile = JSON.parse(localStorage.getItem(profKey) || "{}");
     const inputPengaju = document.getElementById("item-pengaju");
     if (savedProfile.fullname && inputPengaju) {
       inputPengaju.value = savedProfile.fullname;
@@ -916,15 +926,52 @@ function renderSubmissionTable() {
         if (pengajuImg) { pengajuImg.src = ""; pengajuImg.style.display = "none"; }
         if (pengajuEmpty) pengajuEmpty.style.display = "inline-block";
       }
+
+      initSignaturePad("admin-signature-canvas", "admin-signature-wrapper", "admin-sig-status", "btn-clear-admin-signature");
+
       // Reset canvas for modal open
       const canvas = document.getElementById("admin-signature-canvas");
-      if (canvas) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+      const wrapper = document.getElementById("admin-signature-wrapper");
       const sigStatus = document.getElementById("admin-sig-status");
+
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        delete canvas.dataset.signed;
+      }
+      if (wrapper) wrapper.classList.remove("has-signature");
       if (sigStatus) {
         sigStatus.className = "signature-status empty";
         sigStatus.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Belum ada tanda tangan`;
       }
-      initSignaturePad("admin-signature-canvas", "admin-signature-wrapper", "admin-sig-status", "btn-clear-admin-signature");
+
+      // Auto-fill Direktur / Admin saved signature from their profile if available!
+      try {
+        const profKey = getUserProfileKey();
+        const savedProfile = JSON.parse(localStorage.getItem(profKey) || localStorage.getItem("spms_profile_hibatullah") || localStorage.getItem("spms_profile_direktur") || localStorage.getItem("spms_profile_admin") || "{}");
+        if (savedProfile.signature) {
+          const img = new Image();
+          img.onload = function() {
+            const activeAdminCanvas = document.getElementById("admin-signature-canvas");
+            if (activeAdminCanvas) {
+              const ctx = activeAdminCanvas.getContext("2d");
+              ctx.clearRect(0, 0, activeAdminCanvas.width, activeAdminCanvas.height);
+              ctx.drawImage(img, 0, 0, activeAdminCanvas.width, activeAdminCanvas.height);
+              activeAdminCanvas.dataset.signed = "true";
+              const activeAdminWrapper = document.getElementById("admin-signature-wrapper");
+              const activeAdminStatus = document.getElementById("admin-sig-status");
+              if (activeAdminWrapper) activeAdminWrapper.classList.add("has-signature");
+              if (activeAdminStatus) {
+                activeAdminStatus.className = "signature-status filled";
+                activeAdminStatus.innerHTML = `
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Tanda tangan Direktur terisi otomatis dari Profil`;
+              }
+            }
+          };
+          img.src = savedProfile.signature;
+        }
+      } catch (e) {}
     }
   }
 
