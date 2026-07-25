@@ -225,12 +225,6 @@ async function fetchItems() {
     }
   });
 
-// Force clear database as requested by user
-localStorage.removeItem("spms_items");
-localStorage.removeItem("spms_local_new_items");
-localStorage.removeItem("spms_status_overrides");
-localStorage.setItem("spms_db_cleared", "true");
-items = [];
 
 window.clearAllDatabaseData = async function() {
   if (!confirm("⚠️ Apakah Anda yakin ingin MENGHAPUS SELURUH DATA pengajuan barang di database? Data yang dihapus tidak dapat dikembalikan.")) {
@@ -746,24 +740,56 @@ if (formRegisterItem) {
       }
     });
 
+    // Remove database cleared flag on new submission
+    localStorage.removeItem("spms_db_cleared");
+
+    // Instantly persist and render locally
+    const localNew = JSON.parse(localStorage.getItem("spms_local_new_items") || "[]");
+    newItems.forEach(rawItem => {
+      const formattedItem = {
+        id: parseInt(rawItem["ID"]),
+        name: rawItem["NAMA BARANG"],
+        dept: rawItem["DEPARTERMENT"],
+        qty: rawItem["JUMLAH"],
+        price: rawItem["HARGA"],
+        urgency: rawItem["URGENSI"],
+        minStock: rawItem["MIN STOCK"],
+        pengaju: rawItem["PENGAJU"],
+        wa: rawItem["WA"],
+        signature: rawItem["TANDA TANGAN"],
+        adminSignature: "",
+        approval: "Pending",
+        pembelian: "Belum Dibeli",
+        tanggal: rawItem["TANGGAL"]
+      };
+      localNew.unshift(formattedItem);
+      if (!items.some(i => i.id === formattedItem.id)) {
+        items.unshift(formattedItem);
+      }
+    });
+
+    localStorage.setItem("spms_local_new_items", JSON.stringify(localNew));
+    localStorage.setItem("spms_items", JSON.stringify(items));
+    
+    // Instant UI update
+    updateUI();
+    closeModal();
+    showToast(`✅ ${addedCount} barang berhasil didaftarkan!`);
+
+    // Trigger WA notification to Manager & Direktur for new submission
+    if (newItems.length > 0) {
+      const lastItem = newItems[newItems.length - 1];
+      sendWaNotification(lastItem.ID, "Pengajuan Baru");
+    }
+
     try {
       await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: newItems })
       });
-      await fetchItems();
-      closeModal();
-      showToast(`✅ ${addedCount} barang berhasil didaftarkan!`);
-
-      // Trigger WA notification to Manager for new submission
-      if (newItems.length > 0) {
-        const lastItem = newItems[newItems.length - 1];
-        sendWaNotification(lastItem.ID, "Pengajuan Baru");
-      }
     } catch(err) {
-      console.error(err);
-      showToast("❌ Gagal menyimpan data ke internet!");
+      console.warn("SheetDB sync info", err);
     } finally {
       btnSubmit.innerHTML = originalText;
       btnSubmit.disabled = false;
