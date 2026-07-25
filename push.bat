@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Refine automatic WhatsApp profile number lookup for all roles (Admin, Manager, Direktur, Inventaris)"
+git commit -m "Enhance sendWaDirect with URLSearchParams and fallback to direct link opening"
 git push origin main

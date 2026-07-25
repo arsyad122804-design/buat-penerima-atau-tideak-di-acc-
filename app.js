@@ -83,37 +83,58 @@ function getRoleWaNumber(targetRole) {
 async function sendWaDirect(phoneRaw, message) {
   const waClean = (phoneRaw || "").replace(/[^0-9]/g, "");
   if (!waClean) {
-    console.warn("Nomor WA tujuan tidak tersedia.");
+    showToast("⚠️ Nomor WA tujuan belum diisi di profil!");
     return false;
   }
 
   let phone = waClean;
   if (phone.startsWith("0")) phone = "62" + phone.slice(1);
 
-  showToast(`📲 Mengirimkan notifikasi WA ke ${phone}...`);
+  showToast(`📲 Mengirim notifikasi WA ke ${phone}...`);
 
   try {
-    const formData = new FormData();
-    formData.append("target", phone);
-    formData.append("message", message);
-    formData.append("countryCode", "62");
+    const params = new URLSearchParams();
+    params.append("target", phone);
+    params.append("message", message);
+    params.append("countryCode", "62");
 
     const res = await fetch("https://api.fonnte.com/send", {
       method: "POST",
-      headers: { "Authorization": FONNTE_TOKEN },
-      body: formData
+      headers: { 
+        "Authorization": FONNTE_TOKEN,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: params.toString()
     });
 
     const data = await res.json();
-    if (data && (data.status || data.detail)) {
+    console.log("Fonnte WA Response:", data);
+
+    if (data && (data.status === true || data.detail)) {
       showToast(`✅ Notifikasi WA terkirim otomatis ke ${phone}!`);
       return true;
     } else {
-      showToast(`📲 WA terproses dikirim ke ${phone}`);
-      return true;
+      console.warn("Fonnte API warning/disconnect:", data);
+      showToast(`📲 Membuka WhatsApp ke ${phone}...`);
+
+      const link = document.createElement("a");
+      link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return false;
     }
   } catch (err) {
-    console.warn("Fonnte API background send failed", err);
+    console.warn("Fonnte API network error, opening direct link...", err);
+    const link = document.createElement("a");
+    link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     return false;
   }
 }
