@@ -499,8 +499,9 @@
     const AUTH_API_URL = "https://sheetdb.io/api/v1/2hbuzs32m6bvw";
 
     const ACCOUNTS = [
-      { username: "admin",  password: "hibatullah admin", role: "admin",  name: "Administrator" },
-      { username: "hibatullah",  password: "hibatullah maju",  role: "direktur",   name: "Direktur" }
+      { username: "admin",      password: "hibatullah admin",   role: "admin",    name: "Administrator" },
+      { username: "hibatullah", password: "hibatullah maju",    role: "direktur", name: "Direktur" },
+      { username: "manager",    password: "hibatullah manager", role: "manager",  name: "Manager" }
     ];
 
     // =====================================================
@@ -599,7 +600,7 @@
           btnLogin.style.background = "#10b981"; // Success green
 
           setTimeout(() => {
-            if (account.role === "admin" || account.role === "direktur") window.location.href = "admin.html";
+            if (account.role === "admin" || account.role === "direktur" || account.role === "manager") window.location.href = "admin.html";
             else window.location.href = "index.html";
           }, 800);
         } else {
@@ -617,7 +618,7 @@
     if (session) {
       try {
         const parsed = JSON.parse(session);
-        if (parsed.role === "admin" || parsed.role === "direktur") window.location.href = "admin.html";
+        if (parsed.role === "admin" || parsed.role === "direktur" || parsed.role === "manager") window.location.href = "admin.html";
         else window.location.href = "index.html";
       } catch (e) {
         window.location.href = "index.html";

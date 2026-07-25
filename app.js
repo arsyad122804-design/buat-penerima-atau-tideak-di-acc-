@@ -1169,6 +1169,7 @@ function initProfileView() {
 
     let defaultName = savedName || sessionUser.name || "";
     if (!defaultName && sessionUser.role === "direktur") defaultName = "Hibatullah (Direktur)";
+    else if (!defaultName && sessionUser.role === "manager") defaultName = "Manager SPMS";
     else if (!defaultName && sessionUser.role === "admin") defaultName = "Admin SPMS";
 
     if (inputFullname) {
@@ -1237,7 +1238,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const avatarLetter = document.getElementById("user-avatar-letter");
 
       if (displayName) displayName.textContent = session.name;
-      if (displayRole) displayRole.textContent  = session.role || "Staff";
+      if (displayRole) displayRole.textContent  = session.role === "direktur" ? "Direktur" : session.role === "manager" ? "Manager" : session.role === "admin" ? "Administrator" : session.role || "Staff";
       if (avatarLetter) avatarLetter.textContent = session.name.charAt(0).toUpperCase();
 
       // Set body class for CSS role-based rules
@@ -1259,8 +1260,8 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Direktur specific restrictions: Hide Admin specific tabs
-      if (session.role === 'direktur') {
+      // Direktur & Manager specific: Show Dashboard, Approval, Reports & Profile
+      if (session.role === 'direktur' || session.role === 'manager') {
         ['nav-admin-history', 'nav-admin-purchases'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.display = 'none';
