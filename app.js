@@ -166,12 +166,34 @@ async function fetchItems() {
   const oldT = t && !t.textContent.includes("Mengambil") ? t.textContent : "Beranda";
   if (t) t.textContent = "Mengambil data...";
   
+  // Permanent Hard Wipe logic
+  const isHardWiped = localStorage.getItem("spms_hard_wiped_v2");
+  if (!isHardWiped) {
+    localStorage.removeItem("spms_items");
+    localStorage.removeItem("spms_local_new_items");
+    localStorage.removeItem("spms_status_overrides");
+    localStorage.setItem("spms_hard_wiped_v2", "true");
+    items = [];
+  }
+  
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
     const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
 
-    items = data.map(item => {
+    // Initialize or get deleted item IDs list
+    let deletedIds = JSON.parse(localStorage.getItem("spms_deleted_ids_v2") || "[]");
+    
+    // First time hard wipe: mark all existing rows as deleted
+    if (deletedIds.length === 0 && Array.isArray(data) && data.length > 0) {
+      deletedIds = data.map(item => parseInt(item["ID"]) || 0);
+      localStorage.setItem("spms_deleted_ids_v2", JSON.stringify(deletedIds));
+    }
+
+    items = (Array.isArray(data) ? data : []).filter(item => {
+      const id = parseInt(item["ID"]) || 0;
+      return !deletedIds.includes(id);
+    }).map(item => {
       const id = parseInt(item["ID"]) || 0;
       const rawApprovalStr = item["PERSETUJUAN "] || item["PERSETUJUAN"] || "Pending";
       const parts = rawApprovalStr.split("|");
@@ -214,7 +236,10 @@ async function fetchItems() {
   // Merge locally created items
   const localNew = JSON.parse(localStorage.getItem("spms_local_new_items") || "[]");
   const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
+  const deletedIds = JSON.parse(localStorage.getItem("spms_deleted_ids_v2") || "[]");
+
   localNew.forEach(newItem => {
+    if (deletedIds.includes(newItem.id)) return;
     if (overrides[newItem.id]) {
       if (overrides[newItem.id].approval) newItem.approval = overrides[newItem.id].approval;
       if (overrides[newItem.id].adminSignature !== undefined) newItem.adminSignature = overrides[newItem.id].adminSignature;
