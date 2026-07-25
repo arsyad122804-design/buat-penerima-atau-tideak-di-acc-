@@ -56,6 +56,14 @@
           <span>Laporan</span>
           <div class="nav-active-bar"></div>
         </button>
+
+        <button class="nav-item" data-tab="profile" id="nav-profile">
+          <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <span>Profil Saya</span>
+          <div class="nav-active-bar"></div>
+        </button>
       </nav>
 
       <div class="sidebar-bottom">
@@ -303,6 +311,43 @@
           </div>
         </section>
 
+        <!-- ============ PROFILE VIEW ============ -->
+        <section id="view-profile" class="tab-view">
+          <div class="view-page-header">
+            <h2>Profil & Tanda Tangan Saya</h2>
+            <p>Kelola nama lengkap dan tanda tangan digital Anda. Data ini akan otomatis terisi saat Anda membuat pengajuan barang baru.</p>
+          </div>
+
+          <div class="submission-list-card" style="max-width: 650px; margin: 0 auto; padding: 24px;">
+            <form id="form-user-profile">
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label for="profile-fullname" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">Nama Lengkap Pengaju</label>
+                <input type="text" id="profile-fullname" class="filter-input" style="width: 100%; height: 42px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--clr-border);" placeholder="Contoh: Ahmad Fauzi, S.Pd." required>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">Tanda Tangan Digital Saya</label>
+                <div class="signature-pad-wrapper" id="profile-signature-wrapper">
+                  <canvas id="profile-signature-canvas" width="500" height="140"></canvas>
+                  <button type="button" class="btn-clear-signature" id="btn-clear-profile-signature" title="Hapus Tanda Tangan">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Bersihkan
+                  </button>
+                </div>
+                <div class="signature-status empty" id="profile-sig-status" style="margin-top: 8px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Belum ada tanda tangan
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="width: 100%; height: 46px; font-size: 14px; justify-content: center; border-radius: 10px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Simpan Profil & Tanda Tangan
+              </button>
+            </form>
+          </div>
+        </section>
+
       </div><!-- end views-wrapper -->
 
       <!-- Bottom Nav (Mobile) -->
@@ -315,6 +360,11 @@
         <button class="nav-item" data-tab="reports">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
           <span>Laporan</span>
+        </button>
+
+        <button class="nav-item" data-tab="profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profil</span>
         </button>
       </footer>
 

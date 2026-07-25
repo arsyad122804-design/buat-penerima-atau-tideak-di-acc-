@@ -368,6 +368,7 @@ function openModal(department = "Kepesantrenan") {
   if (canvas) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    delete canvas.dataset.signed;
   }
   if (wrapper) wrapper.classList.remove("has-signature");
   if (sigStatus) {
@@ -376,7 +377,32 @@ function openModal(department = "Kepesantrenan") {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       Belum ada tanda tangan`;
   }
-  initSignaturePad();
+
+  // Auto-fill profile name & signature if saved
+  try {
+    const savedProfile = JSON.parse(localStorage.getItem("spms_profile") || "{}");
+    const inputPengaju = document.getElementById("item-pengaju");
+    if (savedProfile.fullname && inputPengaju) {
+      inputPengaju.value = savedProfile.fullname;
+    }
+    if (savedProfile.signature && canvas) {
+      const img = new Image();
+      img.onload = function() {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.dataset.signed = "true";
+        if (wrapper) wrapper.classList.add("has-signature");
+        if (sigStatus) {
+          sigStatus.className = "signature-status filled";
+          sigStatus.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tanda tangan terisi otomatis dari Profil`;
+        }
+      };
+      img.src = savedProfile.signature;
+    }
+  } catch (e) {}
 }
 
 function closeModal() {
@@ -1015,10 +1041,74 @@ if (btnExportCSV) {
 }
 
 // =====================================================
+// PROFILE VIEW LOGIC
+// =====================================================
+function initProfileView() {
+  const formProfile = document.getElementById("form-user-profile");
+  const inputFullname = document.getElementById("profile-fullname");
+  const canvasProfile = document.getElementById("profile-signature-canvas");
+  const wrapperProfile = document.getElementById("profile-signature-wrapper");
+  const statusProfile = document.getElementById("profile-sig-status");
+
+  if (!formProfile) return;
+
+  initSignaturePad("profile-signature-canvas", "profile-signature-wrapper", "profile-sig-status", "btn-clear-profile-signature");
+
+  // Load saved profile data
+  try {
+    const savedProfile = JSON.parse(localStorage.getItem("spms_profile") || "{}");
+    const sessionUser = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
+
+    if (inputFullname) {
+      inputFullname.value = savedProfile.fullname || sessionUser.name || "";
+    }
+
+    if (savedProfile.signature && canvasProfile) {
+      const img = new Image();
+      img.onload = function() {
+        const ctx = canvasProfile.getContext("2d");
+        ctx.clearRect(0, 0, canvasProfile.width, canvasProfile.height);
+        ctx.drawImage(img, 0, 0, canvasProfile.width, canvasProfile.height);
+        canvasProfile.dataset.signed = "true";
+        if (wrapperProfile) wrapperProfile.classList.add("has-signature");
+        if (statusProfile) {
+          statusProfile.className = "signature-status filled";
+          statusProfile.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tanda tangan profil tersimpan`;
+        }
+      };
+      img.src = savedProfile.signature;
+    }
+  } catch (e) {}
+
+  // Save profile submit handler
+  formProfile.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const fullname = inputFullname ? inputFullname.value.trim() : "";
+    if (!fullname) {
+      showToast("⚠️ Harap masukkan nama lengkap Anda!");
+      return;
+    }
+
+    const signatureData = canvasProfile && !isCanvasBlank(canvasProfile) ? canvasProfile.toDataURL() : "";
+
+    const profileData = {
+      fullname: fullname,
+      signature: signatureData
+    };
+
+    localStorage.setItem("spms_profile", JSON.stringify(profileData));
+    showToast("✅ Profil & Tanda Tangan berhasil disimpan!");
+  });
+}
+
+// =====================================================
 // INIT
 // =====================================================
 window.addEventListener("DOMContentLoaded", () => {
   fetchItems();
+  initProfileView();
 
   // --- Load session user info into header ---
   try {
