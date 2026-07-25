@@ -5,6 +5,8 @@
 // ---- State ----
 const API_URL = "https://sheetdb.io/api/v1/foet3yghxpc6n";
 let items = [];
+let currentApprovalId = null;
+let currentApprovalAction = null;
 
 function saveLocalOverrides(id, approval, adminSignature, pembelian) {
   try {
@@ -864,13 +866,10 @@ function renderSubmissionTable() {
     tbody.appendChild(tr);
   });
 
-  let currentApprovalId = null;
-  let currentApprovalAction = null;
-
   function openAdminSignatureModal(id, action) {
     currentApprovalId = id;
     currentApprovalAction = action;
-    const item = items.find(i => i.id === id);
+    const item = items.find(i => i.id == id);
     const modal = document.getElementById("modal-admin-signature");
     if (modal) {
       modal.classList.add("open");
@@ -931,7 +930,7 @@ function handleAdminSignatureConfirm(e) {
     return;
   }
   const adminSignatureData = canvas ? canvas.toDataURL() : "";
-  const itemToApprove = items.find(i => i.id === currentApprovalId);
+  const itemToApprove = items.find(i => i.id == currentApprovalId);
   const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
   const action = currentApprovalAction || "Disetujui";
 
