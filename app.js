@@ -274,7 +274,16 @@ window.markAsPurchased = async function(id) {
   item.pembelian = "Sudah Dibeli";
   saveLocalOverrides(id, item.approval, item.adminSignature, "Sudah Dibeli");
   updateUI();
-  showToast(`✅ "${item.name}" berhasil ditandai sudah dibeli.`);
+  showToast(`🛒 "${item.name}" telah selesai dibeli oleh Admin!`);
+
+  // Auto trigger WhatsApp notification if number is present
+  if (item.wa) {
+    setTimeout(() => {
+      if (typeof sendWaNotification === "function") {
+        sendWaNotification(id, "SUDAH DIBELI OLEH ADMIN");
+      }
+    }, 400);
+  }
 
   try {
     const newApprovalStr = `${item.approval}|${item.adminSignature}|Sudah Dibeli`;
@@ -1364,11 +1373,11 @@ window.addEventListener("DOMContentLoaded", () => {
       const readNotifs = JSON.parse(localStorage.getItem(`read_notifs_${session.role}`) || "[]");
       let newNotifs = [];
 
-      if (session.role === "direktur") {
+      if (session.role === "direktur" || session.role === "manager") {
         newNotifs = items.filter(i => i.approval === "Pending").map(i => ({
           id: i.id,
           title: "Pengajuan Baru",
-          desc: `Inventaris mengajukan ${i.qty} Pcs ${i.name}`,
+          desc: `${i.pengaju || 'Inventaris'} mengajukan ${i.qty} Pcs ${i.name} (${i.dept})`,
           icon: "⏳", cls: "notif-icon--pending",
           isRead: readNotifs.includes(i.id)
         }));
@@ -1376,20 +1385,28 @@ window.addEventListener("DOMContentLoaded", () => {
         newNotifs = items.filter(i => i.approval === "Disetujui" && i.pembelian !== "Sudah Dibeli").map(i => ({
           id: i.id,
           title: "Siap Dibeli",
-          desc: `Direktur menyetujui pembelian ${i.qty} Pcs ${i.name}`,
+          desc: `Direktur / Manager menyetujui pengadaan ${i.qty} Pcs ${i.name}`,
           icon: "🛒", cls: "notif-icon--approved",
           isRead: readNotifs.includes(i.id)
         }));
       } else {
-        // Inventaris
-        newNotifs = items.filter(i => i.approval !== "Pending").map(i => ({
-          id: i.id,
-          title: i.pembelian === "Sudah Dibeli" ? "Sudah Dibeli!" : "Respon Direktur",
-          desc: i.pembelian === "Sudah Dibeli" ? `${i.name} telah selesai dibelikan Admin.` : `Pengajuan ${i.name} Anda ${i.approval}.`,
-          icon: i.pembelian === "Sudah Dibeli" ? "✅" : (i.approval === "Disetujui" ? "✔️" : "❌"),
-          cls: i.approval === "Disetujui" ? "notif-icon--approved" : "notif-icon--pending",
-          isRead: readNotifs.includes(i.id)
-        }));
+        // Inventaris / Staff
+        newNotifs = items.filter(i => i.approval !== "Pending").map(i => {
+          const isBought = i.pembelian === "Sudah Dibeli";
+          const isApproved = i.approval === "Disetujui";
+          return {
+            id: i.id,
+            title: isBought ? "Barang Sudah Dibeli Admin!" : (isApproved ? "Diterima Direktur / Manager!" : "Ditolak Direktur / Manager"),
+            desc: isBought 
+              ? `Pengajuan ${i.name} (${i.qty} Pcs) telah selesai dibelikan oleh Admin.` 
+              : (isApproved 
+                ? `Pengajuan ${i.name} Anda telah DITERIMA & DISETUJUI oleh Direktur / Manager.` 
+                : `Pengajuan ${i.name} Anda ditolak oleh Direktur / Manager.`),
+            icon: isBought ? "✅" : (isApproved ? "✔️" : "❌"),
+            cls: isBought ? "notif-icon--approved" : (isApproved ? "notif-icon--approved" : "notif-icon--pending"),
+            isRead: readNotifs.includes(i.id)
+          };
+        });
       }
 
       const unreadCount = newNotifs.filter(n => !n.isRead).length;
