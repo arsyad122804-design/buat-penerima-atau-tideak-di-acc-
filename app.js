@@ -38,7 +38,9 @@ function saveLocalOverrides(id, approval, adminSignature, pembelian) {
   } catch (e) {}
 }
 
-window.sendWaNotification = function(id, action) {
+const FONNTE_TOKEN = "EvEc9ZQsRM8dCWUCqujm";
+
+window.sendWaNotification = async function(id, action) {
   const item = items.find(i => i.id == id);
   if (!item) return;
 
@@ -67,16 +69,38 @@ window.sendWaNotification = function(id, action) {
 
   const message = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Bapak/Ibu"},\n\nNotifikasi Status Pengajuan Barang:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *${statusIcon}*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
 
-  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+  showToast("📲 Mengirimkan notifikasi WhatsApp di latar belakang...");
 
-  // Use synchronous anchor click to bypass pop-up blockers in Browser/Electron
-  const link = document.createElement("a");
-  link.href = waUrl;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    const formData = new FormData();
+    formData.append("target", phone);
+    formData.append("message", message);
+    formData.append("countryCode", "62");
+
+    const res = await fetch("https://api.fonnte.com/send", {
+      method: "POST",
+      headers: {
+        "Authorization": FONNTE_TOKEN
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (data && (data.status || data.detail)) {
+      showToast(`✅ Notifikasi WA terkirim otomatis ke ${phone}!`);
+    } else {
+      console.log("Fonnte WA API Response:", data);
+      showToast(`📲 WA terproses dikirim ke ${phone}`);
+    }
+  } catch (err) {
+    console.warn("Koneksi Fonnte API terganggu, menggunakan fallback link...", err);
+    const link = document.createElement("a");
+    link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 async function fetchItems() {
