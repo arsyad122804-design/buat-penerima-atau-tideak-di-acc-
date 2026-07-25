@@ -887,9 +887,30 @@ function renderSubmissionTable() {
       apv = { cls: "approval-badge--pending", icon: "⏳" };
       apvLabel = "Disetujui (Blm Beli)";
     }
-    const rawPengaju = item.pengaju || "—";
-    const waClean    = (item.wa || "").replace(/[^0-9]/g, "");
-    const pengaju    = waClean ? `<a href="https://wa.me/${waClean}" target="_blank" style="color:#059669; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="Chat via WhatsApp">📱 ${rawPengaju}</a>` : rawPengaju;
+window.sendWaNotification = function(id, action) {
+  const item = items.find(i => i.id == id);
+  if (!item) return;
+
+  const waRaw = item.wa || (typeof getSavedProfile === "function" && getSavedProfile().wa) || "";
+  const waClean = waRaw.replace(/[^0-9]/g, "");
+
+  if (!waClean) {
+    showToast("⚠️ Nomor WhatsApp pengaju tidak tersedia / belum diisi!");
+    return;
+  }
+
+  let phone = waClean;
+  if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+
+  const statusMsg = action ? action.toUpperCase() : (item.approval || "PENDING").toUpperCase();
+  const text = `Halo ${item.pengaju || "Bapak/Ibu"},\n\nPengajuan barang *"${item.name}"* (Dept: ${item.dept}, Qty: ${item.qty} Pcs) statusnya saat ini: *${statusMsg}*.\n\nSistem Pengadaan SPMS Hibatullah IIBS`;
+
+  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  window.open(waUrl, "_blank");
+};
+
+    const pengaju  = item.pengaju || "—";
+    const waClean  = (item.wa || "").replace(/[^0-9]/g, "");
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -898,7 +919,10 @@ function renderSubmissionTable() {
       <td><span class="dept-badge ${dept.cls}">${dept.label}</span></td>
       <td style="font-weight:600;">${item.qty} Pcs</td>
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
-      <td style="font-weight:500; color:var(--clr-muted);">${pengaju}</td>
+      <td style="font-weight:500;">
+        ${pengaju}
+        ${waClean ? `<br><button onclick="sendWaNotification(${item.id})" style="background:#25d366; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-top:4px;" title="Kirim Notifikasi WA">📲 Notif WA</button>` : ""}
+      </td>
       <td>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
           <span class="approval-badge ${apv.cls}">
@@ -1039,6 +1063,14 @@ function handleAdminSignatureConfirm(e) {
   const modal = document.getElementById("modal-admin-signature");
   if (modal) modal.classList.remove("open");
   showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
+
+  // Check if WhatsApp notification should be sent
+  const checkWa = document.getElementById("check-send-wa");
+  if (checkWa && checkWa.checked && currentApprovalId) {
+    setTimeout(() => {
+      sendWaNotification(currentApprovalId, action);
+    }, 400);
+  }
 
   // 3. Background sync to SheetDB
   if (currentApprovalId) {

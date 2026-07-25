@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Fix account signature isolation and add WhatsApp number to profile and procurement forms"
+git commit -m "Convert WhatsApp number to direct WhatsApp notification system on approval and table actions"
 git push origin main
