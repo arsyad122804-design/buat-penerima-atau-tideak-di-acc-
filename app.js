@@ -121,23 +121,23 @@ window.sendWaNotification = async function(id, action) {
     if (mgrPhone) sendWaDirect(mgrPhone, msgMgr);
     else showToast("⚠️ Nomor WA Manager belum diisi di menu Profil!");
   } 
-  else if (actionClean === "Disetujui Manager") {
-    // 2a. Send WA to Direktur
-    const msgDir = `Assalamu'alaikum wr. wb.\n\nYth. Direktur,\n\nNotifikasi Persetujuan Manager:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *👔 DISETUJUI MANAGER (Menunggu Persetujuan Direktur)*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-    if (dirPhone) sendWaDirect(dirPhone, msgDir);
-
-    // 2b. Send WA to Inventaris
-    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Inventaris"},\n\nPengajuan barang Anda:\n📦 *Barang:* ${item.name}\n\nStatus Terbaru: *👔 DISETUJUI MANAGER* (Diteruskan ke Direktur).\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-    if (invPhone) sendWaDirect(invPhone, msgInv);
-  } 
-  else if (actionClean === "Disetujui" || actionClean === "Disetujui Direktur") {
-    // 3a. Send WA to Admin
-    const msgAdm = `Assalamu'alaikum wr. wb.\n\nYth. Admin,\n\nPengadaan Barang Siap Dibeli:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *✅ DISETUJUI DIREKTUR (Siap Dibeli)*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+  else if (actionClean === "Disetujui" || actionClean === "Disetujui Direktur" || actionClean === "Disetujui Manager") {
+    // 1. DIRECTLY SEND WA TO ADMIN (Primary Target on Konfirmasi)
+    const msgAdm = `Assalamu'alaikum wr. wb.\n\nYth. Admin,\n\nPengadaan Barang Telah Disetujui & Siap Dibeli:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *✅ DISETUJUI (Siap Dibeli)*\nSilakan lakukan proses pembelian.\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
     if (admPhone) sendWaDirect(admPhone, msgAdm);
+    else showToast("⚠️ Nomor WA Admin belum diisi di menu Profil!");
 
-    // 3b. Send WA to Inventaris
-    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Inventaris"},\n\nPengajuan barang Anda:\n📦 *Barang:* ${item.name}\n\nStatus Terbaru: *✅ DISETUJUI DIREKTUR* (Diteruskan ke Admin untuk dibeli).\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-    if (invPhone) sendWaDirect(invPhone, msgInv);
+    // 2. Also send WA to Direktur if approved by Manager
+    if (actionClean === "Disetujui Manager" && dirPhone) {
+      const msgDir = `Assalamu'alaikum wr. wb.\n\nYth. Direktur,\n\nNotifikasi Persetujuan Manager:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *👔 DISETUJUI MANAGER*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+      sendWaDirect(dirPhone, msgDir);
+    }
+
+    // 3. Also send WA to Inventaris (Applicant)
+    if (invPhone) {
+      const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Inventaris"},\n\nPengajuan barang Anda:\n📦 *Barang:* ${item.name}\n\nStatus Terbaru: *✅ DISETUJUI* (Diteruskan ke Admin untuk dibeli).\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+      sendWaDirect(invPhone, msgInv);
+    }
   } 
   else if (actionClean === "Ditolak") {
     // 4. Send WA to Inventaris

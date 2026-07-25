@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Comprehensive WhatsApp automated background notifications for all roles and workflow stages"
+git commit -m "Directly dispatch WhatsApp notification to Admin upon Konfirmasi click"
 git push origin main
