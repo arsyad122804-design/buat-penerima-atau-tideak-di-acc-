@@ -410,13 +410,9 @@ window.markAsPurchased = async function(id) {
   updateUI();
   showToast(`🛒 "${item.name}" telah selesai dibeli oleh Admin!`);
 
-  // Auto trigger WhatsApp notification if number is present
-  if (item.wa) {
-    setTimeout(() => {
-      if (typeof sendWaNotification === "function") {
-        sendWaNotification(id, "SUDAH DIBELI OLEH ADMIN");
-      }
-    }, 400);
+  // Automatically send background WhatsApp notification to Inventaris!
+  if (typeof sendWaNotification === "function") {
+    sendWaNotification(id, "SUDAH DIBELI OLEH ADMIN");
   }
 
   try {
