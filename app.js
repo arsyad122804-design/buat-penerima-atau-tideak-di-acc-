@@ -1037,28 +1037,6 @@ function renderSubmissionTable() {
       apv = { cls: "approval-badge--pending", icon: "⏳" };
       apvLabel = "Disetujui (Blm Beli)";
     }
-window.sendWaNotification = function(id, action) {
-  const item = items.find(i => i.id == id);
-  if (!item) return;
-
-  const waRaw = item.wa || (typeof getSavedProfile === "function" && getSavedProfile().wa) || "";
-  const waClean = waRaw.replace(/[^0-9]/g, "");
-
-  if (!waClean) {
-    showToast("⚠️ Nomor WhatsApp pengaju tidak tersedia / belum diisi!");
-    return;
-  }
-
-  let phone = waClean;
-  if (phone.startsWith("0")) phone = "62" + phone.slice(1);
-
-  const statusMsg = action ? action.toUpperCase() : (item.approval || "PENDING").toUpperCase();
-  const text = `Halo ${item.pengaju || "Bapak/Ibu"},\n\nPengajuan barang *"${item.name}"* (Dept: ${item.dept}, Qty: ${item.qty} Pcs) statusnya saat ini: *${statusMsg}*.\n\nSistem Pengadaan SPMS Hibatullah IIBS`;
-
-  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
-  window.open(waUrl, "_blank");
-};
-
     const pengaju  = item.pengaju || "—";
     const waClean  = (item.wa || "").replace(/[^0-9]/g, "");
 
