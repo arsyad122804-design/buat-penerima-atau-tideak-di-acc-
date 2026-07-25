@@ -40,36 +40,43 @@ function saveLocalOverrides(id, approval, adminSignature, pembelian) {
 
 const FONNTE_TOKEN = "EvEc9ZQsRM8dCWUCqujm";
 
-window.sendWaNotification = async function(id, action) {
-  const item = items.find(i => i.id == id);
-  if (!item) return;
+function getRoleWaNumber(targetRole) {
+  try {
+    const roleClean = (targetRole || "").toLowerCase();
+    const fallbackKeys = [
+      "spms_profile_" + roleClean,
+      "spms_profile_" + (roleClean === "direktur" ? "hibatullah" : roleClean === "manager" ? "manager" : "admin"),
+      "spms_profile_default",
+      "spms_profile"
+    ];
 
-  // Retrieve WA number from item, or fallback profile
-  let waRaw = item.wa;
-  if (!waRaw && typeof getSavedProfile === "function") {
-    const prof = getSavedProfile();
-    if (prof && prof.wa) waRaw = prof.wa;
-  }
+    for (const key of fallbackKeys) {
+      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      if (data && data.wa) return data.wa;
+    }
 
-  const waClean = (waRaw || "").replace(/[^0-9]/g, "");
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("spms_profile_")) {
+        const data = JSON.parse(localStorage.getItem(k) || "{}");
+        if (data && data.wa) return data.wa;
+      }
+    }
+  } catch (e) {}
+  return "";
+}
 
+async function sendWaDirect(phoneRaw, message) {
+  const waClean = (phoneRaw || "").replace(/[^0-9]/g, "");
   if (!waClean) {
-    showToast("⚠️ Nomor WA pengaju tidak tersedia untuk dikirimi pesan!");
-    return;
+    console.warn("Nomor WA tujuan tidak tersedia.");
+    return false;
   }
 
   let phone = waClean;
   if (phone.startsWith("0")) phone = "62" + phone.slice(1);
 
-  let statusText = action ? action.toUpperCase() : (item.approval || "PENDING").toUpperCase();
-  let statusIcon = "📌";
-  if (statusText.includes("DISETUJUI")) statusIcon = "✅ DISETUJUI";
-  else if (statusText.includes("DITOLAK")) statusIcon = "❌ DITOLAK";
-  else if (statusText.includes("DIBELI")) statusIcon = "🛒 SUDAH DIBELI ADMIN";
-
-  const message = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Bapak/Ibu"},\n\nNotifikasi Status Pengajuan Barang:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *${statusIcon}*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-
-  showToast("📲 Mengirimkan notifikasi WhatsApp di latar belakang...");
+  showToast(`📲 Mengirimkan notifikasi WA ke ${phone}...`);
 
   try {
     const formData = new FormData();
@@ -79,27 +86,59 @@ window.sendWaNotification = async function(id, action) {
 
     const res = await fetch("https://api.fonnte.com/send", {
       method: "POST",
-      headers: {
-        "Authorization": FONNTE_TOKEN
-      },
+      headers: { "Authorization": FONNTE_TOKEN },
       body: formData
     });
 
     const data = await res.json();
     if (data && (data.status || data.detail)) {
       showToast(`✅ Notifikasi WA terkirim otomatis ke ${phone}!`);
+      return true;
     } else {
-      console.log("Fonnte WA API Response:", data);
       showToast(`📲 WA terproses dikirim ke ${phone}`);
+      return true;
     }
   } catch (err) {
-    console.warn("Koneksi Fonnte API terganggu, menggunakan fallback link...", err);
-    const link = document.createElement("a");
-    link.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    console.warn("Fonnte API background send failed", err);
+    return false;
+  }
+}
+
+window.sendWaNotification = async function(id, action) {
+  const item = items.find(i => i.id == id);
+  if (!item) return;
+
+  let targetPhone = "";
+  let targetRoleName = "";
+
+  if (action === "Pengajuan Baru") {
+    targetRoleName = "Manager";
+    targetPhone = getRoleWaNumber("manager");
+  } else if (action === "Disetujui Manager") {
+    targetRoleName = "Direktur";
+    targetPhone = getRoleWaNumber("direktur");
+  } else if (action === "Disetujui" || action === "Disetujui Direktur") {
+    targetRoleName = "Admin";
+    targetPhone = getRoleWaNumber("admin");
+  } else {
+    // Inventaris / Pengaju
+    targetRoleName = item.pengaju || "Inventaris";
+    targetPhone = item.wa || (getSavedProfile() ? getSavedProfile().wa : "") || getRoleWaNumber("inventaris");
+  }
+
+  let statusText = action ? action.toUpperCase() : (item.approval || "PENDING").toUpperCase();
+  let statusIcon = "📌";
+  if (statusText.includes("DISETUJUI MANAGER")) statusIcon = "👔 DISETUJUI MANAGER";
+  else if (statusText.includes("DISETUJUI")) statusIcon = "✅ DISETUJUI DIREKTUR";
+  else if (statusText.includes("DITOLAK")) statusIcon = "❌ DITOLAK";
+  else if (statusText.includes("DIBELI")) statusIcon = "🛒 SUDAH DIBELI ADMIN";
+
+  const message = `Assalamu'alaikum wr. wb.\n\nYth. ${targetRoleName},\n\nNotifikasi Status Pengajuan Barang:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus Terbaru: *${statusIcon}*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+
+  if (targetPhone) {
+    sendWaDirect(targetPhone, message);
+  } else {
+    showToast(`⚠️ Nomor WA ${targetRoleName} belum diisi di menu Profil!`);
   }
 };
 
@@ -654,6 +693,12 @@ if (formRegisterItem) {
       await fetchItems();
       closeModal();
       showToast(`✅ ${addedCount} barang berhasil didaftarkan!`);
+
+      // Trigger WA notification to Manager for new submission
+      if (newItems.length > 0) {
+        const lastItem = newItems[newItems.length - 1];
+        sendWaNotification(lastItem.ID, "Pengajuan Baru");
+      }
     } catch(err) {
       console.error(err);
       showToast("❌ Gagal menyimpan data ke internet!");
