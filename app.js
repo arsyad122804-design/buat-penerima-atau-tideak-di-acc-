@@ -1066,10 +1066,10 @@ window.sendWaNotification = function(id, action) {
         </div>
       </td>
       <td>
-        <div class="approval-actions">
-          ${approval !== "Disetujui" ? `<button class="btn-approve" data-id="${item.id}" title="Setujui">✓ Setujui</button>` : ""}
-          ${approval !== "Ditolak"   ? `<button class="btn-reject"  data-id="${item.id}" title="Tolak">✕ Tolak</button>`   : ""}
-          ${approval !== "Pending"   ? `<button class="btn-pending" data-id="${item.id}" title="Pending">⏳ Pending</button>` : ""}
+        <div class="approval-actions" style="display:flex; gap:6px; align-items:center;">
+          <button class="btn-approve" data-id="${item.id}" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Terima Pengajuan">✓ Terima</button>
+          <button class="btn-reject"  data-id="${item.id}" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Nolak Pengajuan">✕ Nolak</button>
+          <button class="btn-edit-item" data-id="${item.id}" style="background:#0284c7; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Edit Barang">✏️ Edit</button>
         </div>
       </td>
     `;
@@ -1098,7 +1098,7 @@ window.sendWaNotification = function(id, action) {
       // Reset canvas for modal open
       const canvas = document.getElementById("admin-signature-canvas");
       const wrapper = document.getElementById("admin-signature-wrapper");
-      const sigStatus = document.getElementById("admin-sig-status");
+      const status = document.getElementById("admin-sig-status");
 
       if (canvas) {
         const ctx = canvas.getContext("2d");
@@ -1106,17 +1106,17 @@ window.sendWaNotification = function(id, action) {
         delete canvas.dataset.signed;
       }
       if (wrapper) wrapper.classList.remove("has-signature");
-      if (sigStatus) {
-        sigStatus.className = "signature-status empty";
-        sigStatus.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Belum ada tanda tangan`;
+      if (status) {
+        status.className = "signature-status empty";
+        status.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Belum ada tanda tangan`;
       }
 
       // Auto-fill Direktur / Admin saved signature from their profile if available!
       try {
-        const prof = getSavedProfile();
-        if (prof.signature) {
+        const prof = typeof getSavedProfile === "function" ? getSavedProfile() : null;
+        if (prof && prof.signature) {
           const img = new Image();
-          img.onload = function() {
+          img.onload = () => {
             const activeAdminCanvas = document.getElementById("admin-signature-canvas");
             if (activeAdminCanvas) {
               const ctx = activeAdminCanvas.getContext("2d");
@@ -1147,6 +1147,9 @@ window.sendWaNotification = function(id, action) {
   tbody.querySelectorAll(".btn-reject").forEach(btn => {
     btn.addEventListener("click", () => openAdminSignatureModal(parseInt(btn.dataset.id), "Ditolak"));
   });
+  tbody.querySelectorAll(".btn-edit-item").forEach(btn => {
+    btn.addEventListener("click", () => openEditItemModal(parseInt(btn.dataset.id)));
+  });
   tbody.querySelectorAll(".btn-pending").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = parseInt(btn.dataset.id);
@@ -1166,6 +1169,35 @@ window.sendWaNotification = function(id, action) {
       }
     });
   });
+}
+
+function openEditItemModal(id) {
+  const item = items.find(i => i.id == id);
+  if (!item) return;
+
+  const modal = document.getElementById("modal-edit-item");
+  if (!modal) return;
+
+  const nameInp = document.getElementById("edit-item-name");
+  const deptInp = document.getElementById("edit-item-dept");
+  const qtyInp = document.getElementById("edit-item-qty");
+  const priceInp = document.getElementById("edit-item-price");
+  const urgInp = document.getElementById("edit-item-urgency");
+  const idInp = document.getElementById("edit-item-id");
+
+  if (idInp) idInp.value = item.id;
+  if (nameInp) nameInp.value = item.name;
+  if (deptInp) deptInp.value = item.dept || "Kepesantrenan";
+  if (qtyInp) qtyInp.value = item.qty;
+  if (priceInp) priceInp.value = item.price;
+  if (urgInp) urgInp.value = item.urgency || "Biasa";
+
+  modal.classList.add("open");
+}
+
+function closeEditItemModal() {
+  const modal = document.getElementById("modal-edit-item");
+  if (modal) modal.classList.remove("open");
 }
 
 function handleAdminSignatureConfirm(e) {
@@ -1596,5 +1628,50 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     } catch(e) {}
   };
+
+  // --- Edit Modal Handlers ---
+  const btnCloseEdit = document.getElementById("btn-close-edit-modal");
+  const btnCancelEdit = document.getElementById("btn-cancel-edit-modal");
+  const formEditItem = document.getElementById("form-edit-item");
+
+  if (btnCloseEdit) btnCloseEdit.addEventListener("click", closeEditItemModal);
+  if (btnCancelEdit) btnCancelEdit.addEventListener("click", closeEditItemModal);
+
+  if (formEditItem) {
+    formEditItem.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("edit-item-id").value;
+      const item = items.find(i => i.id == id);
+      if (!item) return;
+
+      item.name = document.getElementById("edit-item-name").value;
+      item.dept = document.getElementById("edit-item-dept").value;
+      item.qty = parseInt(document.getElementById("edit-item-qty").value) || 1;
+      item.price = parseFloat(document.getElementById("edit-item-price").value) || 0;
+      item.urgency = document.getElementById("edit-item-urgency").value;
+
+      closeEditItemModal();
+      updateUI();
+      showToast(`✅ Data "${item.name}" berhasil diperbarui!`);
+
+      try {
+        await fetch(`${API_URL}/ID/${id}`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            data: {
+              "NAMA BARANG": item.name,
+              "DEPARTERMENT": item.dept,
+              "JUMLAH": item.qty,
+              "HARGA": item.price,
+              "URGENSI": item.urgency
+            }
+          })
+        });
+      } catch (err) {
+        console.warn("Gagal sync edit ke SheetDB", err);
+      }
+    });
+  }
 
 });
