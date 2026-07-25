@@ -80,6 +80,27 @@ function getRoleWaNumber(targetRole) {
   return "";
 }
 
+function resolveWaDisplay(item) {
+  if (!item) return "—";
+  if (item.wa && item.wa.trim()) return item.wa;
+
+  const pengaju = (item.pengaju || "").toLowerCase().trim();
+  if (pengaju) {
+    const wa = getRoleWaNumber(pengaju);
+    if (wa) return wa;
+  }
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("spms_profile_")) {
+      const data = JSON.parse(localStorage.getItem(k) || "{}");
+      if (data && data.wa) return data.wa;
+    }
+  }
+
+  return "—";
+}
+
 async function sendWaDirect(phoneRaw, message) {
   const waClean = (phoneRaw || "").replace(/[^0-9]/g, "");
   if (!waClean) {
@@ -526,7 +547,7 @@ function renderAdminPurchasesTable() {
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${i.pengaju || '—'}</span>
         <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
-          📱 ${i.wa ? i.wa : '—'}
+          📱 ${resolveWaDisplay(i)}
         </span>
       </td>
       <td>
@@ -1053,7 +1074,7 @@ function renderTable() {
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${item.pengaju || '—'}</span>
         <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
-          📱 ${item.wa ? item.wa : '—'}
+          📱 ${resolveWaDisplay(item)}
         </span>
       </td>
       <td>
@@ -1140,7 +1161,7 @@ function renderSubmissionTable() {
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${pengaju}</span>
         <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
-          📱 ${item.wa ? item.wa : '—'}
+          📱 ${resolveWaDisplay(item)}
         </span>
       </td>
       <td>
