@@ -42,23 +42,33 @@ const FONNTE_TOKEN = "EvEc9ZQsRM8dCWUCqujm";
 
 function getRoleWaNumber(targetRole) {
   try {
-    const roleClean = (targetRole || "").toLowerCase();
-    const fallbackKeys = [
+    const roleClean = (targetRole || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+    
+    // Exact profile keys to try
+    const keysToTry = [
       "spms_profile_" + roleClean,
-      "spms_profile_" + (roleClean === "direktur" ? "hibatullah" : roleClean === "manager" ? "manager" : "admin"),
-      "spms_profile_direktur",
-      "spms_profile_manager",
-      "spms_profile_admin",
-      "spms_profile_hibatullah",
-      "spms_profile_default",
-      "spms_profile"
+      "spms_profile_" + (roleClean === "direktur" ? "hibatullah" : roleClean === "manager" ? "manager" : roleClean === "admin" ? "admin" : roleClean)
     ];
 
-    for (const key of fallbackKeys) {
+    for (const key of keysToTry) {
       const data = JSON.parse(localStorage.getItem(key) || "{}");
       if (data && data.wa) return data.wa;
     }
 
+    // Secondary scan across all spms_profile_ keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("spms_profile_")) {
+        const data = JSON.parse(localStorage.getItem(k) || "{}");
+        if (data && data.wa) {
+          if (k.includes(roleClean) || (roleClean === "direktur" && k.includes("hibatullah"))) {
+            return data.wa;
+          }
+        }
+      }
+    }
+
+    // Global fallback
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k && k.startsWith("spms_profile_")) {
