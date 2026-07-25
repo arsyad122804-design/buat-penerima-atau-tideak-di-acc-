@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Support multiple Manager login password options (manager & hibatullah manager)"
+git commit -m "Allow Manager role in admin.html session guard and clarify Persetujuan tab navigation"
 git push origin main

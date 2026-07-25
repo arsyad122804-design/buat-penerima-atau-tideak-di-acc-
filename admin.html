@@ -17,7 +17,7 @@
       else {
         try {
           const p = JSON.parse(s);
-          if (p.role !== 'admin' && p.role !== 'direktur') window.location.replace('index.html');
+          if (p.role !== 'admin' && p.role !== 'direktur' && p.role !== 'manager') window.location.replace('index.html');
         } catch(e) { window.location.replace('login.html'); }
       }
     })();
