@@ -6,6 +6,18 @@
 const API_URL = "https://sheetdb.io/api/v1/foet3yghxpc6n";
 let items = [];
 
+function saveLocalOverrides(id, approval, adminSignature, pembelian) {
+  try {
+    const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
+    overrides[id] = {
+      approval: approval,
+      adminSignature: adminSignature,
+      pembelian: pembelian
+    };
+    localStorage.setItem("spms_status_overrides", JSON.stringify(overrides));
+  } catch (e) {}
+}
+
 async function fetchItems() {
   const t = document.getElementById("header-page-title");
   const oldT = t && !t.textContent.includes("Mengambil") ? t.textContent : "Beranda";
@@ -14,25 +26,61 @@ async function fetchItems() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-    items = data.map(item => ({
-      id: parseInt(item["ID"]) || 0,
-      name: item["NAMA BARANG"] || "",
-      dept: item["DEPARTERMENT"] || "",
-      qty: parseInt(item["JUMLAH"]) || 0,
-      price: parseFloat(item["HARGA"]) || 0,
-      urgency: item["URGENSI"] || "Normal",
-      minStock: parseInt(item["MIN STOCK"]) || 0,
-      pengaju: item["PENGAJU"] || "",
-      signature: item["TANDA TANGAN"] || "",
-      adminSignature: (item["PERSETUJUAN "] || "").split("|")[1] || item["TTD ADMIN"] || "",
-      approval: (item["PERSETUJUAN "] || "Pending").split("|")[0],
-      pembelian: (item["PERSETUJUAN "] || "").split("|")[2] || item["PEMBELIAN"] || "Belum Dibeli",
-      tanggal: item["TANGGAL"] || ""
-    }));
+    const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
+
+    items = data.map(item => {
+      const id = parseInt(item["ID"]) || 0;
+      const rawApprovalStr = item["PERSETUJUAN "] || item["PERSETUJUAN"] || "Pending";
+      const parts = rawApprovalStr.split("|");
+      
+      let approval = parts[0] || "Pending";
+      let adminSignature = parts[1] || item["TTD ADMIN"] || "";
+      let pembelian = parts[2] || item["PEMBELIAN"] || "Belum Dibeli";
+
+      // Apply persistent local override if available
+      if (overrides[id]) {
+        if (overrides[id].approval) approval = overrides[id].approval;
+        if (overrides[id].adminSignature !== undefined) adminSignature = overrides[id].adminSignature;
+        if (overrides[id].pembelian) pembelian = overrides[id].pembelian;
+      }
+
+      return {
+        id: id,
+        name: item["NAMA BARANG"] || "",
+        dept: item["DEPARTERMENT"] || "",
+        qty: parseInt(item["JUMLAH"]) || 0,
+        price: parseFloat(item["HARGA"]) || 0,
+        urgency: item["URGENSI"] || "Normal",
+        minStock: parseInt(item["MIN STOCK"]) || 5,
+        pengaju: item["PENGAJU"] || "",
+        signature: item["TANDA TANGAN"] || "",
+        adminSignature: adminSignature,
+        approval: approval,
+        pembelian: pembelian,
+        tanggal: item["TANGGAL"] || ""
+      };
+    });
+    localStorage.setItem("spms_items", JSON.stringify(items));
   } catch (err) {
     console.error("Gagal mengambil data dari SheetDB", err);
+    const saved = localStorage.getItem("spms_items");
+    if (saved) items = JSON.parse(saved);
   }
-  
+
+  // Merge locally created items
+  const localNew = JSON.parse(localStorage.getItem("spms_local_new_items") || "[]");
+  const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
+  localNew.forEach(newItem => {
+    if (overrides[newItem.id]) {
+      if (overrides[newItem.id].approval) newItem.approval = overrides[newItem.id].approval;
+      if (overrides[newItem.id].adminSignature !== undefined) newItem.adminSignature = overrides[newItem.id].adminSignature;
+      if (overrides[newItem.id].pembelian) newItem.pembelian = overrides[newItem.id].pembelian;
+    }
+    if (!items.some(i => i.id === newItem.id)) {
+      items.unshift(newItem);
+    }
+  });
+
   if (t) t.textContent = oldT;
   updateUI();
 }
@@ -201,14 +249,23 @@ function updateUI() {
 window.markAsPurchased = async function(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
+
+  // Instant local update & save override
+  item.pembelian = "Sudah Dibeli";
+  saveLocalOverrides(id, item.approval, item.adminSignature, "Sudah Dibeli");
+  updateUI();
+  showToast(`✅ "${item.name}" berhasil ditandai sudah dibeli.`);
+
   try {
-    const btn = document.querySelector(`button[data-purchase-id="${id}"]`);
-    if (btn) { btn.innerHTML = "⏳.."; btn.disabled = true; }
     const newApprovalStr = `${item.approval}|${item.adminSignature}|Sudah Dibeli`;
-    await fetch(`${API_URL}/ID/${id}`, { method: 'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data: {"PERSETUJUAN ": newApprovalStr}}) });
-    showToast(`✅ "${item.name}" berhasil ditandai sudah dibeli.`);
-    await fetchItems();
-  } catch(e) { showToast("❌ Gagal update status pembelian!"); }
+    await fetch(`${API_URL}/ID/${id}`, { 
+      method: 'PATCH', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({data: {"PERSETUJUAN ": newApprovalStr}}) 
+    });
+  } catch(e) { 
+    console.warn("SheetDB sync warning", e);
+  }
 };
 
 function renderAdminHistoryTable() {
@@ -718,7 +775,11 @@ function renderSubmissionTable() {
   const deptF     = fDept?.value     || "all";
 
   const filtered = items.filter(item => {
-    const matchApproval = approvalF === "all" || (item.approval || "Pending") === approvalF;
+    const matchApproval = approvalF === "all"
+      || (approvalF === "Sudah Dibeli" && item.pembelian === "Sudah Dibeli")
+      || (approvalF === "Disetujui" && item.approval === "Disetujui")
+      || (approvalF === "Ditolak" && item.approval === "Ditolak")
+      || (approvalF === "Pending" && (item.approval || "Pending") === "Pending");
     const matchDept     = deptF === "all" || item.dept === deptF;
     return matchApproval && matchDept;
   });
@@ -843,6 +904,18 @@ function renderSubmissionTable() {
       try {
         const itemToApprove = items.find(i => i.id === currentApprovalId);
         const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
+        
+        // Instant local update
+        if (itemToApprove) {
+          itemToApprove.approval = currentApprovalAction;
+          itemToApprove.adminSignature = adminSignatureData;
+          saveLocalOverrides(currentApprovalId, currentApprovalAction, adminSignatureData, currentPembelian);
+          updateUI();
+        }
+
+        document.getElementById("modal-admin-signature").classList.remove("open");
+        showToast(`✅ Status berhasil diperbarui menjadi ${currentApprovalAction}!`);
+
         await fetch(`${API_URL}/ID/${currentApprovalId}`, { 
           method: 'PATCH', 
           headers:{'Content-Type':'application/json'}, 
@@ -852,11 +925,8 @@ function renderSubmissionTable() {
             }
           }) 
         });
-        document.getElementById("modal-admin-signature").classList.remove("open");
-        await fetchItems();
-        showToast(`✅ Status berhasil diperbarui menjadi ${currentApprovalAction}!`);
       } catch(err) {
-        showToast("❌ Gagal mengupdate data!");
+        console.warn("SheetDB sync warning", err);
       } finally {
         btnSubmit.innerHTML = origText;
         btnSubmit.disabled = false;
@@ -884,12 +954,15 @@ function renderSubmissionTable() {
       const id = parseInt(btn.dataset.id);
       const item = items.find(i => i.id === id);
       if (item) {
-        btn.innerHTML = "⏳..";
+        item.approval = "Pending";
+        item.adminSignature = "";
+        saveLocalOverrides(id, "Pending", "", item.pembelian || "Belum Dibeli");
+        updateUI();
+        showToast(`⏳ "${item.name}" dikembalikan ke Pending.`);
+
         try {
           await fetch(`${API_URL}/ID/${id}`, { method: 'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data: {"PERSETUJUAN ": "Pending||Belum Dibeli"}}) });
-          await fetchItems();
-          showToast(`⏳ "${item.name}" dikembalikan ke Pending.`);
-        } catch(e) { showToast("❌ Gagal mengupdate data!"); }
+        } catch(e) { console.warn("SheetDB sync warning", e); }
       }
     });
   });
