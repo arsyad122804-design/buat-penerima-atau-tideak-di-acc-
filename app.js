@@ -472,7 +472,12 @@ function renderAdminPurchasesTable() {
       <td><span class="dept-badge ${i.dept === 'SMK' ? 'dept-badge--blue' : i.dept === 'SMP' ? 'dept-badge--orange' : 'dept-badge--green'}">${i.dept}</span></td>
       <td style="font-weight:600;">${i.qty} Pcs</td>
       <td style="font-weight:600;">${formatRupiah(i.qty * i.price)}</td>
-      <td><span style="color: var(--clr-muted); font-size: 13px;">${i.pengaju || '-'}</span></td>
+      <td>
+        <span style="font-weight:600; color:var(--clr-text); display:block;">${i.pengaju || '—'}</span>
+        <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
+          📱 ${i.wa ? i.wa : '—'}
+        </span>
+      </td>
       <td>
         <div style="display:flex; gap:8px; align-items:center;">
           ${i.signature ? `<img src="${i.signature}" style="height:30px; width:auto; background:white; border-radius:4px; border:1px solid #e2e8f0;" title="Ttd Pengaju">` : '<span style="color:#94a3b8;font-size:11px;">-</span>'}
@@ -963,6 +968,12 @@ function renderTable() {
       <td style="font-weight:500;">Rp ${item.price.toLocaleString("id-ID")}</td>
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
       <td>
+        <span style="font-weight:600; color:var(--clr-text); display:block;">${item.pengaju || '—'}</span>
+        <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
+          📱 ${item.wa ? item.wa : '—'}
+        </span>
+      </td>
+      <td>
         <div class="approval-badge ${meta.cls}">
           <span>${meta.icon}</span> ${label}
         </div>
@@ -1043,9 +1054,11 @@ function renderSubmissionTable() {
       <td><span class="dept-badge ${dept.cls}">${dept.label}</span></td>
       <td style="font-weight:600;">${item.qty} Pcs</td>
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
-      <td style="font-weight:500;">
-        ${pengaju}
-        ${waClean ? `<br><button onclick="sendWaNotification(${item.id})" style="background:#25d366; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-top:4px;" title="Kirim Notifikasi WA">📲 Notif WA</button>` : ""}
+      <td>
+        <span style="font-weight:600; color:var(--clr-text); display:block;">${pengaju}</span>
+        <span style="font-size:11px; font-weight:600; color:#25d366; display:inline-flex; align-items:center; gap:3px;">
+          📱 ${item.wa ? item.wa : '—'}
+        </span>
       </td>
       <td>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
