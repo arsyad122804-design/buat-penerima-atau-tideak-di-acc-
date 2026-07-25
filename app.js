@@ -38,6 +38,33 @@ function saveLocalOverrides(id, approval, adminSignature, pembelian) {
   } catch (e) {}
 }
 
+window.sendWaNotification = function(id, action) {
+  const item = items.find(i => i.id == id);
+  if (!item) return;
+
+  const waRaw = item.wa || (typeof getSavedProfile === "function" && getSavedProfile().wa) || "";
+  const waClean = waRaw.replace(/[^0-9]/g, "");
+
+  if (!waClean) {
+    console.warn("Nomor WhatsApp pengaju belum diisi untuk barang ID:", id);
+    return;
+  }
+
+  let phone = waClean;
+  if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+
+  let statusText = action ? action.toUpperCase() : (item.approval || "PENDING").toUpperCase();
+  let statusIcon = "📌";
+  if (statusText.includes("DISETUJUI")) statusIcon = "✅ DISETUJUI";
+  else if (statusText.includes("DITOLAK")) statusIcon = "❌ DITOLAK";
+  else if (statusText.includes("DIBELI")) statusIcon = "🛒 SUDAH DIBELI ADMIN";
+
+  const message = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Bapak/Ibu"},\n\nNotifikasi Status Pengajuan Barang:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *${statusIcon}*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+
+  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+};
+
 async function fetchItems() {
   const t = document.getElementById("header-page-title");
   const oldT = t && !t.textContent.includes("Mengambil") ? t.textContent : "Beranda";
@@ -73,6 +100,7 @@ async function fetchItems() {
         urgency: item["URGENSI"] || "Normal",
         minStock: parseInt(item["MIN STOCK"]) || 5,
         pengaju: item["PENGAJU"] || "",
+        wa: item["WA"] || "",
         signature: item["TANDA TANGAN"] || "",
         adminSignature: adminSignature,
         approval: approval,
