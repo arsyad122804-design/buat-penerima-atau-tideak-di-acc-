@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Fix active canvas DOM reference after initSignaturePad to ensure automatic signature drawing"
+git commit -m "Fix mobile notification dropdown layout and clipping issue"
 git push origin main
