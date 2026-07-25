@@ -658,13 +658,18 @@ function initSignaturePad(canvasId, wrapperId, statusId, clearBtnId) {
 function isCanvasBlank(canvas) {
   if (!canvas) return true;
   if (canvas.dataset && canvas.dataset.signed === "true") return false;
+  const wrapper = canvas.closest(".signature-pad-wrapper");
+  if (wrapper && wrapper.classList.contains("has-signature")) return false;
   try {
     const ctx = canvas.getContext("2d");
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    return !data.some(channel => channel !== 0);
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0) return false;
+    }
   } catch (e) {
     return false;
   }
+  return true;
 }
 
 // =====================================================
@@ -918,45 +923,56 @@ function renderSubmissionTable() {
   });
 }
 
-// Delegated Admin Signature Form Submit Handler
+function handleAdminSignatureConfirm(e) {
+  if (e) e.preventDefault();
+  const canvas = document.getElementById("admin-signature-canvas");
+  if (canvas && isCanvasBlank(canvas)) {
+    showToast("⚠️ Harap isi tanda tangan terlebih dahulu!");
+    return;
+  }
+  const adminSignatureData = canvas ? canvas.toDataURL() : "";
+  const itemToApprove = items.find(i => i.id === currentApprovalId);
+  const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
+  const action = currentApprovalAction || "Disetujui";
+
+  // 1. Instant local update
+  if (itemToApprove) {
+    itemToApprove.approval = action;
+    itemToApprove.adminSignature = adminSignatureData;
+    saveLocalOverrides(currentApprovalId, action, adminSignatureData, currentPembelian);
+    updateUI();
+  }
+
+  // 2. Instant modal close & toast
+  const modal = document.getElementById("modal-admin-signature");
+  if (modal) modal.classList.remove("open");
+  showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
+
+  // 3. Background sync to SheetDB
+  if (currentApprovalId) {
+    fetch(`${API_URL}/ID/${currentApprovalId}`, { 
+      method: 'PATCH', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({
+        data: {
+          "PERSETUJUAN ": `${action}|${adminSignatureData}|${currentPembelian}`
+        }
+      }) 
+    }).catch(err => console.warn("SheetDB sync warning", err));
+  }
+}
+
+// Delegated Admin Signature Form Submit & Click Handler
 document.addEventListener("submit", (e) => {
   if (e.target && e.target.id === "form-admin-signature") {
-    e.preventDefault();
-    const canvas = document.getElementById("admin-signature-canvas");
-    if (canvas && isCanvasBlank(canvas)) {
-      showToast("⚠️ Harap isi tanda tangan terlebih dahulu!");
-      return;
-    }
-    const adminSignatureData = canvas ? canvas.toDataURL() : "";
-    const itemToApprove = items.find(i => i.id === currentApprovalId);
-    const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
-    const action = currentApprovalAction || "Disetujui";
+    handleAdminSignatureConfirm(e);
+  }
+});
 
-    // 1. Instant local update
-    if (itemToApprove) {
-      itemToApprove.approval = action;
-      itemToApprove.adminSignature = adminSignatureData;
-      saveLocalOverrides(currentApprovalId, action, adminSignatureData, currentPembelian);
-      updateUI();
-    }
-
-    // 2. Instant modal close & toast
-    const modal = document.getElementById("modal-admin-signature");
-    if (modal) modal.classList.remove("open");
-    showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
-
-    // 3. Background sync to SheetDB
-    if (currentApprovalId) {
-      fetch(`${API_URL}/ID/${currentApprovalId}`, { 
-        method: 'PATCH', 
-        headers:{'Content-Type':'application/json'}, 
-        body: JSON.stringify({
-          data: {
-            "PERSETUJUAN ": `${action}|${adminSignatureData}|${currentPembelian}`
-          }
-        }) 
-      }).catch(err => console.warn("SheetDB sync warning", err));
-    }
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#modal-admin-signature button[type='submit'], #btn-submit-admin-sig");
+  if (btn) {
+    handleAdminSignatureConfirm(e);
   }
 });
 
