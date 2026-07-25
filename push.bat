@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Separate profile storage per user account and auto-fill Direktur signature in approval modal"
+git commit -m "Fix profile fallback signature lookup to ensure Direktur and Inventaris signatures auto-fill 100%"
 git push origin main

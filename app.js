@@ -17,6 +17,58 @@ function getUserProfileKey() {
   return "spms_profile_default";
 }
 
+function getAnySavedProfileSignature() {
+  try {
+    const profKey = getUserProfileKey();
+    let saved = JSON.parse(localStorage.getItem(profKey) || "{}");
+    if (saved && saved.signature) return saved.signature;
+
+    const fallbackKeys = [
+      "spms_profile",
+      "spms_profile_hibatullah",
+      "spms_profile_direktur",
+      "spms_profile_admin",
+      "spms_profile_default"
+    ];
+
+    for (const key of fallbackKeys) {
+      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      if (data && data.signature) return data.signature;
+    }
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("spms_profile")) {
+        const data = JSON.parse(localStorage.getItem(k) || "{}");
+        if (data && data.signature) return data.signature;
+      }
+    }
+  } catch (e) {}
+  return "";
+}
+
+function getAnySavedProfileName() {
+  try {
+    const profKey = getUserProfileKey();
+    let saved = JSON.parse(localStorage.getItem(profKey) || "{}");
+    if (saved && saved.fullname) return saved.fullname;
+
+    const fallbackKeys = [
+      "spms_profile",
+      "spms_profile_hibatullah",
+      "spms_profile_direktur",
+      "spms_profile_admin",
+      "spms_profile_default"
+    ];
+
+    for (const key of fallbackKeys) {
+      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      if (data && data.fullname) return data.fullname;
+    }
+  } catch (e) {}
+  return "";
+}
+
 function saveLocalOverrides(id, approval, adminSignature, pembelian) {
   try {
     const overrides = JSON.parse(localStorage.getItem("spms_status_overrides") || "{}");
@@ -392,13 +444,13 @@ function openModal(department = "Kepesantrenan") {
 
   // 3. Auto-fill profile name & signature onto live DOM canvas
   try {
-    const profKey = getUserProfileKey();
-    const savedProfile = JSON.parse(localStorage.getItem(profKey) || "{}");
+    const name = getAnySavedProfileName();
     const inputPengaju = document.getElementById("item-pengaju");
-    if (savedProfile.fullname && inputPengaju) {
-      inputPengaju.value = savedProfile.fullname;
+    if (name && inputPengaju) {
+      inputPengaju.value = name;
     }
-    if (savedProfile.signature) {
+    const sig = getAnySavedProfileSignature();
+    if (sig) {
       const activeCanvas = document.getElementById("signature-canvas");
       if (activeCanvas) {
         const img = new Image();
@@ -417,7 +469,7 @@ function openModal(department = "Kepesantrenan") {
               Tanda tangan terisi otomatis dari Profil`;
           }
         };
-        img.src = savedProfile.signature;
+        img.src = sig;
       }
     }
   } catch (e) {}
@@ -947,9 +999,8 @@ function renderSubmissionTable() {
 
       // Auto-fill Direktur / Admin saved signature from their profile if available!
       try {
-        const profKey = getUserProfileKey();
-        const savedProfile = JSON.parse(localStorage.getItem(profKey) || localStorage.getItem("spms_profile_hibatullah") || localStorage.getItem("spms_profile_direktur") || localStorage.getItem("spms_profile_admin") || "{}");
-        if (savedProfile.signature) {
+        const sig = getAnySavedProfileSignature();
+        if (sig) {
           const img = new Image();
           img.onload = function() {
             const activeAdminCanvas = document.getElementById("admin-signature-canvas");
@@ -965,11 +1016,11 @@ function renderSubmissionTable() {
                 activeAdminStatus.className = "signature-status filled";
                 activeAdminStatus.innerHTML = `
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                  Tanda tangan Direktur terisi otomatis dari Profil`;
+                  Tanda tangan terisi otomatis dari Profil`;
               }
             }
           };
-          img.src = savedProfile.signature;
+          img.src = sig;
         }
       } catch (e) {}
     }
@@ -1111,14 +1162,20 @@ function initProfileView() {
 
   // Load saved profile data
   try {
-    const savedProfile = JSON.parse(localStorage.getItem("spms_profile") || "{}");
+    const profKey = getUserProfileKey();
+    const savedName = getAnySavedProfileName();
+    const savedSig = getAnySavedProfileSignature();
     const sessionUser = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
 
+    let defaultName = savedName || sessionUser.name || "";
+    if (!defaultName && sessionUser.role === "direktur") defaultName = "Hibatullah (Direktur)";
+    else if (!defaultName && sessionUser.role === "admin") defaultName = "Admin SPMS";
+
     if (inputFullname) {
-      inputFullname.value = savedProfile.fullname || sessionUser.name || "";
+      inputFullname.value = defaultName;
     }
 
-    if (savedProfile.signature && canvasProfile) {
+    if (savedSig) {
       const img = new Image();
       img.onload = function() {
         const activeProfCanvas = document.getElementById("profile-signature-canvas");
@@ -1138,7 +1195,7 @@ function initProfileView() {
           }
         }
       };
-      img.src = savedProfile.signature;
+      img.src = savedSig;
     }
   } catch (e) {}
 
