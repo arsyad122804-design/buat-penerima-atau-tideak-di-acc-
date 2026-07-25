@@ -1485,7 +1485,16 @@ function initProfileView() {
       signature: signatureData
     };
 
+    const session = JSON.parse(sessionStorage.getItem("spms_user") || "{}");
+    const nameClean = fullname.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    const userClean = (session.username || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+    const roleClean = (session.role || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+
     localStorage.setItem(getUserProfileKey(), JSON.stringify(profileData));
+    if (nameClean) localStorage.setItem("spms_profile_" + nameClean, JSON.stringify(profileData));
+    if (userClean) localStorage.setItem("spms_profile_" + userClean, JSON.stringify(profileData));
+    if (roleClean) localStorage.setItem("spms_profile_" + roleClean, JSON.stringify(profileData));
+
     showToast("✅ Profil & Tanda Tangan berhasil disimpan!");
   });
 }
