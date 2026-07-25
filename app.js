@@ -551,6 +551,7 @@ function initSignaturePad(canvasId, wrapperId, statusId, clearBtnId) {
   let hasMark = false;
 
   function markSigned() {
+    c.dataset.signed = "true";
     if (!hasMark) {
       hasMark = true;
       if (wrapper) wrapper.classList.add("has-signature");
@@ -641,6 +642,7 @@ function initSignaturePad(canvasId, wrapperId, statusId, clearBtnId) {
     btnClear.parentNode.replaceChild(newBtn, btnClear);
     document.getElementById(clearBtnId).addEventListener("click", () => {
       ctx.clearRect(0, 0, c.width, c.height);
+      delete c.dataset.signed;
       hasMark = false;
       if (wrapper) wrapper.classList.remove("has-signature");
       if (sigStatus) {
@@ -654,9 +656,15 @@ function initSignaturePad(canvasId, wrapperId, statusId, clearBtnId) {
 }
 
 function isCanvasBlank(canvas) {
-  const ctx = canvas.getContext("2d");
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  return !data.some(channel => channel !== 0);
+  if (!canvas) return true;
+  if (canvas.dataset && canvas.dataset.signed === "true") return false;
+  try {
+    const ctx = canvas.getContext("2d");
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    return !data.some(channel => channel !== 0);
+  } catch (e) {
+    return false;
+  }
 }
 
 // =====================================================
@@ -910,10 +918,9 @@ function renderSubmissionTable() {
   });
 }
 
-// Global Admin Signature Form Submit Handler
-const formAdminSig = document.getElementById("form-admin-signature");
-if (formAdminSig) {
-  formAdminSig.addEventListener("submit", (e) => {
+// Delegated Admin Signature Form Submit Handler
+document.addEventListener("submit", (e) => {
+  if (e.target && e.target.id === "form-admin-signature") {
     e.preventDefault();
     const canvas = document.getElementById("admin-signature-canvas");
     if (canvas && isCanvasBlank(canvas)) {
@@ -923,19 +930,20 @@ if (formAdminSig) {
     const adminSignatureData = canvas ? canvas.toDataURL() : "";
     const itemToApprove = items.find(i => i.id === currentApprovalId);
     const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
+    const action = currentApprovalAction || "Disetujui";
 
     // 1. Instant local update
     if (itemToApprove) {
-      itemToApprove.approval = currentApprovalAction;
+      itemToApprove.approval = action;
       itemToApprove.adminSignature = adminSignatureData;
-      saveLocalOverrides(currentApprovalId, currentApprovalAction, adminSignatureData, currentPembelian);
+      saveLocalOverrides(currentApprovalId, action, adminSignatureData, currentPembelian);
       updateUI();
     }
 
     // 2. Instant modal close & toast
     const modal = document.getElementById("modal-admin-signature");
     if (modal) modal.classList.remove("open");
-    showToast(`✅ Status berhasil diperbarui menjadi ${currentApprovalAction}!`);
+    showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
 
     // 3. Background sync to SheetDB
     if (currentApprovalId) {
@@ -944,13 +952,13 @@ if (formAdminSig) {
         headers:{'Content-Type':'application/json'}, 
         body: JSON.stringify({
           data: {
-            "PERSETUJUAN ": `${currentApprovalAction}|${adminSignatureData}|${currentPembelian}`
+            "PERSETUJUAN ": `${action}|${adminSignatureData}|${currentPembelian}`
           }
         }) 
       }).catch(err => console.warn("SheetDB sync warning", err));
     }
-  });
-}
+  }
+});
 
 // Modal close handlers for admin signature
 document.getElementById("btn-close-admin-modal")?.addEventListener("click", () => {
