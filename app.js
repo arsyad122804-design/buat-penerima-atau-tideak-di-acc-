@@ -882,66 +882,6 @@ function renderSubmissionTable() {
     }
   }
 
-  // Admin Signature Submit
-  const formAdminSig = document.getElementById("form-admin-signature");
-  if (formAdminSig) {
-    // Clone to remove old listener in case renderSubmissionTable is called multiple times
-    const newForm = formAdminSig.cloneNode(true);
-    formAdminSig.parentNode.replaceChild(newForm, formAdminSig);
-    document.getElementById("form-admin-signature").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const canvas = document.getElementById("admin-signature-canvas");
-      if (canvas && isCanvasBlank(canvas)) {
-        showToast("⚠️ Harap isi tanda tangan admin!");
-        return;
-      }
-      const adminSignatureData = canvas ? canvas.toDataURL() : "";
-      const btnSubmit = e.target.querySelector("button[type='submit']");
-      const origText = btnSubmit.innerHTML;
-      btnSubmit.innerHTML = "⏳..";
-      btnSubmit.disabled = true;
-
-      try {
-        const itemToApprove = items.find(i => i.id === currentApprovalId);
-        const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
-        
-        // Instant local update
-        if (itemToApprove) {
-          itemToApprove.approval = currentApprovalAction;
-          itemToApprove.adminSignature = adminSignatureData;
-          saveLocalOverrides(currentApprovalId, currentApprovalAction, adminSignatureData, currentPembelian);
-          updateUI();
-        }
-
-        document.getElementById("modal-admin-signature").classList.remove("open");
-        showToast(`✅ Status berhasil diperbarui menjadi ${currentApprovalAction}!`);
-
-        await fetch(`${API_URL}/ID/${currentApprovalId}`, { 
-          method: 'PATCH', 
-          headers:{'Content-Type':'application/json'}, 
-          body: JSON.stringify({
-            data: {
-              "PERSETUJUAN ": `${currentApprovalAction}|${adminSignatureData}|${currentPembelian}`
-            }
-          }) 
-        });
-      } catch(err) {
-        console.warn("SheetDB sync warning", err);
-      } finally {
-        btnSubmit.innerHTML = origText;
-        btnSubmit.disabled = false;
-      }
-    });
-  }
-
-  // Modal close handlers for admin signature
-  document.getElementById("btn-close-admin-modal")?.addEventListener("click", () => {
-    document.getElementById("modal-admin-signature").classList.remove("open");
-  });
-  document.getElementById("btn-cancel-admin-modal")?.addEventListener("click", () => {
-    document.getElementById("modal-admin-signature").classList.remove("open");
-  });
-
   // Approval action handlers
   tbody.querySelectorAll(".btn-approve").forEach(btn => {
     btn.addEventListener("click", () => openAdminSignatureModal(parseInt(btn.dataset.id), "Disetujui"));
@@ -960,13 +900,65 @@ function renderSubmissionTable() {
         updateUI();
         showToast(`⏳ "${item.name}" dikembalikan ke Pending.`);
 
-        try {
-          await fetch(`${API_URL}/ID/${id}`, { method: 'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data: {"PERSETUJUAN ": "Pending||Belum Dibeli"}}) });
-        } catch(e) { console.warn("SheetDB sync warning", e); }
+        fetch(`${API_URL}/ID/${id}`, { 
+          method: 'PATCH', 
+          headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify({data: {"PERSETUJUAN ": "Pending||Belum Dibeli"}}) 
+        }).catch(e => console.warn("SheetDB sync warning", e));
       }
     });
   });
 }
+
+// Global Admin Signature Form Submit Handler
+const formAdminSig = document.getElementById("form-admin-signature");
+if (formAdminSig) {
+  formAdminSig.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const canvas = document.getElementById("admin-signature-canvas");
+    if (canvas && isCanvasBlank(canvas)) {
+      showToast("⚠️ Harap isi tanda tangan terlebih dahulu!");
+      return;
+    }
+    const adminSignatureData = canvas ? canvas.toDataURL() : "";
+    const itemToApprove = items.find(i => i.id === currentApprovalId);
+    const currentPembelian = itemToApprove ? itemToApprove.pembelian : "Belum Dibeli";
+
+    // 1. Instant local update
+    if (itemToApprove) {
+      itemToApprove.approval = currentApprovalAction;
+      itemToApprove.adminSignature = adminSignatureData;
+      saveLocalOverrides(currentApprovalId, currentApprovalAction, adminSignatureData, currentPembelian);
+      updateUI();
+    }
+
+    // 2. Instant modal close & toast
+    const modal = document.getElementById("modal-admin-signature");
+    if (modal) modal.classList.remove("open");
+    showToast(`✅ Status berhasil diperbarui menjadi ${currentApprovalAction}!`);
+
+    // 3. Background sync to SheetDB
+    if (currentApprovalId) {
+      fetch(`${API_URL}/ID/${currentApprovalId}`, { 
+        method: 'PATCH', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({
+          data: {
+            "PERSETUJUAN ": `${currentApprovalAction}|${adminSignatureData}|${currentPembelian}`
+          }
+        }) 
+      }).catch(err => console.warn("SheetDB sync warning", err));
+    }
+  });
+}
+
+// Modal close handlers for admin signature
+document.getElementById("btn-close-admin-modal")?.addEventListener("click", () => {
+  document.getElementById("modal-admin-signature")?.classList.remove("open");
+});
+document.getElementById("btn-cancel-admin-modal")?.addEventListener("click", () => {
+  document.getElementById("modal-admin-signature")?.classList.remove("open");
+});
 
 // Filter bindings (dashboard submission table)
 document.addEventListener("DOMContentLoaded", () => {
