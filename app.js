@@ -100,6 +100,21 @@ function formatWaInput(val) {
 function resolveWaDisplay(item) {
   if (!item) return "—";
   if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
+
+  const pengaju = (item.pengaju || "").toLowerCase().trim();
+  if (pengaju) {
+    const wa = getRoleWaNumber(pengaju);
+    if (wa) return formatWaInput(wa);
+  }
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("spms_profile_")) {
+      const data = JSON.parse(localStorage.getItem(k) || "{}");
+      if (data && data.wa) return formatWaInput(data.wa);
+    }
+  }
+
   return "—";
 }
 
