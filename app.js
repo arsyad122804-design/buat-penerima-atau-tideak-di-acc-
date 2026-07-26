@@ -394,6 +394,7 @@ const PAGE_TITLES = {
   dashboard: "Dashboard",
   approval: "Persetujuan",
   reports: "Laporan",
+  profile: "Profil Saya",
   "admin-history": "Riwayat Persetujuan",
   "admin-purchases": "Status Pembelian"
 };
@@ -2096,7 +2097,7 @@ function generateSmartAiResponse(text) {
   if (query.includes("beli") || query.includes("dibeli") || query.includes("admin")) {
     return `
       🛒 <strong>Panduan Pembelian Barang oleh Admin</strong>:<br><br>
-      1. Login ke portal Admin (`admin.html`).<br>
+      1. Login ke portal Admin (admin.html).<br>
       2. Masuk ke halaman <strong>Pembelian Barang</strong>.<br>
       3. Pada barang yang berstatus <em>Disetujui</em>, klik tombol <strong>Tandai Dibeli</strong>.<br>
       4. Notifikasi WhatsApp otomatis terkirim langsung ke nomor WA pengaju (Inventaris) yang tertera pada pengajuan barang tersebut!
