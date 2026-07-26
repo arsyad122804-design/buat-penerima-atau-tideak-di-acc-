@@ -2073,23 +2073,22 @@ function generateSmartAiResponse(text) {
     return sum + (p * q);
   }, 0);
 
-  // 1. MENYAPA & PERCAKAPAN RAMAH (GREETINGS & SMALL TALK)
-  if (/^(hai|haii|haiii|halo|haloo|hello|helo|p|assalamu|assalamualaikum|pagi|siang|malam|bot|spms|woi|oi|gan|min|salam|tes|test)/i.test(query) || query.length <= 4) {
-    return `
-      Wa'alaikumsalam / Halo kak! 👋😊<br><br>
-      Ada yang bisa saya bantu terkait aplikasi SPMS Hibatullah IIBS hari ini?<br><br>
-      Anda bisa menanyakan alur pengajuan, status persetujuan barang, notifikasi WhatsApp, profil tanda tangan, atau mencari nama barang tertentu!
-    `;
+  // 1. APA KABAR & PERCAKAPAN RAMAH
+  if (query.includes("apa kabar") || query.includes("kabar") || query.includes("gimana kabar") || query.includes("sehat")) {
+    return `Alhamdulillah saya sehat dan siap membantu kak! 😊 Kakak sendiri bagaimana kabarnya hari ini? Ada pengajuan barang atau informasi pengadaan sekolah yang ingin ditanyakan?`;
   }
 
-  // 2. TENTANG IDENTITAS AI
+  // 2. MENYAPA & SALAM (GREETINGS)
+  if (/^(hai|haii|haiii|halo|haloo|hello|helo|p|assalamu|assalamualaikum|pagi|siang|malam|bot|spms|woi|oi|gan|min|salam|tes|test)/i.test(query) || query.length <= 3) {
+    return `Halo kak! 👋😊 Ada yang bisa saya bantu terkait aplikasi SPMS Hibatullah IIBS hari ini?`;
+  }
+
+  // 3. TENTANG IDENTITAS AI
   if (query.includes("siapa") || query.includes("kamu") || query.includes("anda") || query.includes("fitur")) {
-    return `
-      🤖 <strong>Saya adalah SPMS AI Assistant</strong>, asisten panduan pintar yang dirancang untuk membantu seluruh pengguna (Inventaris, Manager, Direktur, & Admin) dalam mengelola pengadaan barang dan anggaran sekolah Hibatullah IIBS secara cepat dan ramah!
-    `;
+    return `Saya SPMS AI Assistant 🤖, asisten pintar pengadaan sekolah Hibatullah IIBS. Saya siap membantu kakak cek alur pengajuan, status persetujuan, pembelian admin, hingga pencarian barang!`;
   }
 
-  // 3. MENANYAKAN STATUS PENGAJUAN BARANG / KONDISI DATABASE
+  // 4. MENANYAKAN STATUS PENGAJUAN BARANG / KONDISI DATABASE
   if (query.includes("status") || query.includes("pending") || query.includes("berapa") || query.includes("total")) {
     return `
       📋 <strong>Status Ringkasan Pengadaan Saat Ini</strong>:<br><br>
@@ -2098,11 +2097,11 @@ function generateSmartAiResponse(text) {
       • Disetujui Manajemen: <strong>${approvedCount} barang ✅</strong><br>
       • Selesai Dibeli Admin: <strong>${boughtCount} barang 🛒</strong><br>
       • Total Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br><br>
-      <em>Buka tab <strong>Persetujuan</strong> atau <strong>Laporan</strong> untuk melihat rincian per barang!</em>
+      <em>Buka tab Persetujuan atau Laporan untuk rincian barang!</em>
     `;
   }
 
-  // 4. ALUR PENGAJUAN BARANG BARU (INVENTARIS)
+  // 5. ALUR PENGAJUAN BARANG BARU (INVENTARIS)
   if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar") || query.includes("alur") || query.includes("buat")) {
     return `
       📝 <strong>Cara Mengajukan Barang Baru</strong>:<br><br>
@@ -2114,7 +2113,7 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 5. PROSES PERSETUJUAN (MANAGER & DIREKTUR)
+  // 6. PROSES PERSETUJUAN (MANAGER & DIREKTUR)
   if (query.includes("setuju") || query.includes("persetujuan") || query.includes("acc") || query.includes("direktur") || query.includes("manager")) {
     return `
       ✅ <strong>Cara Melakukan Persetujuan (Manager & Direktur)</strong>:<br><br>
@@ -2125,7 +2124,7 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 6. PROSES PEMBELIAN (ADMIN)
+  // 7. PROSES PEMBELIAN (ADMIN)
   if (query.includes("beli") || query.includes("dibeli") || query.includes("admin")) {
     return `
       🛒 <strong>Cara Memproses Pembelian Barang (Admin)</strong>:<br><br>
@@ -2136,7 +2135,7 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 7. NOTIFIKASI WHATSAPP & NO WA
+  // 8. NOTIFIKASI WHATSAPP & NO WA
   if (query.includes("wa") || query.includes("whatsapp") || query.includes("notif") || query.includes("fonnte") || query.includes("nomor")) {
     return `
       📱 <strong>Sistem Notifikasi WhatsApp Otomatis (+62)</strong>:<br><br>
@@ -2146,7 +2145,7 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 8. PROFIL & TANDA TANGAN DIGITAL
+  // 9. PROFIL & TANDA TANGAN DIGITAL
   if (query.includes("profil") || query.includes("nama") || query.includes("tanda tangan") || query.includes("ttd")) {
     return `
       👤 <strong>Profil Saya & Tanda Tangan Digital</strong>:<br><br>
@@ -2157,7 +2156,7 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 9. PENCARIAN DATABASE REAL-TIME
+  // 10. PENCARIAN DATABASE REAL-TIME
   const matchedItems = items.filter(i => 
     i.name.toLowerCase().includes(query) || 
     i.dept.toLowerCase().includes(query) || 
@@ -2176,14 +2175,6 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  // 10. RESPONS KONTEKSTUAL JIKA TIDAK ADA KATA KUNCI KHUSUS
-  return `
-    💡 Saya memahami pertanyaan Anda tentang <strong>"${escapeHtml(text)}"</strong>.<br><br>
-    Untuk membantu Anda dengan cepat, Anda bisa menanyakan:<br>
-    • 📝 <em>"Cara pengajuan barang baru"</em><br>
-    • ✅ <em>"Cara persetujuan Direktur & Manager"</em><br>
-    • 🛒 <em>"Cara pembelian oleh Admin"</em><br>
-    • 📊 <em>"Berapa total status barang pending?"</em><br>
-    • 🔍 Atau ketik nama barang tertentu (seperti <em>kasur</em>, <em>proyektor</em>, <em>smk</em>).
-  `;
+  // 11. RESPONS KONTEKSTUAL RAMAH TANPA TEMPLATE KAKU
+  return `Saya mengerti kak. Untuk informasi pengadaan SPMS, kakak bisa tanyakan tentang cara pengajuan barang, status persetujuan, notifikasi WA, atau ketik nama barang yang ingin dicari (seperti <em>kasur</em>, <em>proyektor</em>, atau <em>smk</em>)! 😊`;
 }
