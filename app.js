@@ -1879,6 +1879,9 @@ function escapeHtml(str) {
 }
 
 window.askAiPrompt = function(queryText) {
+  const modalAi = document.getElementById("modal-ai-assistant");
+  if (modalAi) modalAi.classList.add("open");
+
   const chatBody = document.getElementById("ai-chat-body");
   if (!chatBody) return;
 
@@ -1919,7 +1922,7 @@ window.askAiPrompt = function(queryText) {
     `;
     chatBody.appendChild(botMsg);
     chatBody.scrollTop = chatBody.scrollHeight;
-  }, 600);
+  }, 400);
 };
 
 function generateSmartAiResponse(text) {
@@ -1931,7 +1934,26 @@ function generateSmartAiResponse(text) {
   const urgentItems = items.filter(i => (i.urgency || '').toLowerCase().includes('urgen'));
   const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-  if (query.includes("ringkas") || query.includes("status") || query.includes("rekap")) {
+  // Search matching items in current database
+  const matchedItems = items.filter(i => 
+    i.name.toLowerCase().includes(query) || 
+    i.dept.toLowerCase().includes(query) || 
+    (i.pengaju || '').toLowerCase().includes(query)
+  );
+
+  if (matchedItems.length > 0 && !query.includes("ringkas") && !query.includes("budget") && !query.includes("urgen")) {
+    const matchedList = matchedItems.map(i => 
+      `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${i.price.toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval}</em>`
+    ).join('<br>');
+    return `
+      🔍 <strong>Hasil Analisis AI untuk "${escapeHtml(text)}"</strong>:<br><br>
+      Ditemukan <strong>${matchedItems.length} pengajuan barang</strong> yang cocok:<br><br>
+      ${matchedList}<br><br>
+      <em>Total nilai pengajuan terkait: Rp ${matchedItems.reduce((s, x) => s + (x.price * x.qty), 0).toLocaleString('id-ID')}</em>
+    `;
+  }
+
+  if (query.includes("ringkas") || query.includes("status") || query.includes("rekap") || query.includes("semua")) {
     return `
       📊 <strong>Ringkasan Pengadaan SPMS Hibatullah IIBS</strong>:<br><br>
       • Total Barang Didaftarkan: <strong>${totalItems} barang</strong><br>
@@ -1942,12 +1964,12 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  if (query.includes("budget") || query.includes("anggaran") || query.includes("efisiensi") || query.includes("rekomendasi")) {
+  if (query.includes("budget") || query.includes("anggaran") || query.includes("efisiensi") || query.includes("hemat") || query.includes("rekomendasi")) {
     return `
       💡 <strong>Rekomendasi Efisiensi Budget SPMS AI</strong>:<br><br>
-      1. <strong>Skala Prioritas</strong>: Saat ini total pengajuan mencapai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>. Utamakan pembelian barang berstatus <em>Urgent</em> terlebih dahulu.<br>
-      2. <strong>Pembelian Kolektif</strong>: Gabungkan pembelian unit SMK, SMP, & Kepesantrenan untuk menekan biaya pengiriman & mendapatkan diskon grosir supplier.<br>
-      3. <strong>Vendor Terverifikasi</strong>: Pastikan admin meminta minimal 2 penawaran harga pembanding sebelum mengeklik <em>Tandai Dibeli</em>.
+      1. <strong>Skala Prioritas</strong>: Saat ini total pengajuan mencapai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>. Utamakan persetujuan barang berstatus <em>Urgent</em> terlebih dahulu.<br>
+      2. <strong>Pembelian Kolektif</strong>: Gabungkan pengadaan unit SMK, SMP, & Kepesantrenan untuk menekan biaya pengiriman supplier.<br>
+      3. <strong>Analisis Pasar</strong>: Mintalah minimal 2 opsi vendor pembanding sebelum Admin mengeklik <em>Tandai Dibeli</em>.
     `;
   }
 
@@ -1961,9 +1983,9 @@ function generateSmartAiResponse(text) {
 
   return `
     🤖 <strong>Analisis AI SPMS</strong>:<br><br>
-    Berdasarkan data sistem pengadaan saat ini:<br>
-    - Terdaftar <strong>${totalItems} barang</strong> dengan total nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
+    Berdasarkan data sistem pengadaan sekolah saat ini:<br>
+    - Terdaftar <strong>${totalItems} barang</strong> dengan total estimasi nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
     - Ada <strong>${pendingCount} pengajuan</strong> yang masih menunggu persetujuan manajemen.<br><br>
-    <em>Anda dapat mengeklik tombol chip rekomendasi cepat di atas untuk informasi ringkasan atau efisiensi anggaran!</em>
+    <em>Coba tanyakan nama barang (seperti 'kasur', 'smk', 'arsyad') atau klik chip rekomendasi di atas!</em>
   `;
 }
