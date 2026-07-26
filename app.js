@@ -263,6 +263,7 @@ async function fetchItems() {
         qty: parseInt(item["JUMLAH"]) || 0,
         price: parseFloat(item["HARGA"]) || 0,
         urgency: item["URGENSI"] || "Normal",
+        ulasan: item["ULASAN"] || "",
         minStock: parseInt(item["MIN STOCK"]) || 5,
         pengaju: item["PENGAJU"] || "",
         wa: item["WA"] || "",
@@ -794,6 +795,8 @@ if (formRegisterItem) {
       const priceRaw = entry.querySelector(".input-item-price").value;
       const price = parseRupiah(priceRaw);
       const urgency = entry.querySelector(".input-item-urgency").value;
+      const ulasanEl = entry.querySelector(".input-item-ulasan");
+      const ulasan = ulasanEl ? ulasanEl.value.trim() : "";
       const minStock = 5;
       
       if (name && qty > 0) {
@@ -804,6 +807,7 @@ if (formRegisterItem) {
           "JUMLAH":      qty,
           "HARGA":    price,
           "URGENSI":  urgency,
+          "ULASAN":   ulasan,
           "MIN STOCK": minStock,
           "PENGAJU":  pengajuName,
           "WA":       waNumber,
@@ -828,6 +832,7 @@ if (formRegisterItem) {
         qty: rawItem["JUMLAH"],
         price: rawItem["HARGA"],
         urgency: rawItem["URGENSI"],
+        ulasan: rawItem["ULASAN"] || "",
         minStock: rawItem["MIN STOCK"],
         pengaju: rawItem["PENGAJU"],
         wa: rawItem["WA"],
@@ -1090,6 +1095,7 @@ function renderTable() {
       <td style="font-weight:700; ${isLow ? 'color:var(--clr-red);' : ''}">
         ${item.name}
         ${isLow ? '<span style="display:block;font-size:10px;font-weight:600;color:var(--clr-red);">⚠ Stok Rendah</span>' : ''}
+        ${item.ulasan ? `<span style="display:block;font-size:11px;font-weight:400;color:var(--clr-muted,#64748b);margin-top:2px;font-style:italic;">💬 ${item.ulasan}</span>` : ''}
       </td>
       <td>
         <span style="font-weight:500; font-size: 13px; color:var(--clr-muted);">${item.tanggal || '17 Jul 2026'}</span>
@@ -1819,7 +1825,8 @@ window.addEventListener("DOMContentLoaded", () => {
               "DEPARTERMENT": item.dept,
               "JUMLAH": item.qty,
               "HARGA": item.price,
-              "URGENSI": item.urgency
+              "URGENSI": item.urgency,
+              "ULASAN": item.ulasan || ""
             }
           })
         });
