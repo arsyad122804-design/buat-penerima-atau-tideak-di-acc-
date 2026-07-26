@@ -1942,58 +1942,82 @@ function generateSmartAiResponse(text) {
   const urgentItems = items.filter(i => (i.urgency || '').toLowerCase().includes('urgen'));
   const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-  if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar")) {
+  // 1. PANDUAN PENGAJUAN BARANG & ALUR SISTEM
+  if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar") || query.includes("alur")) {
     return `
-      📝 <strong>Panduan Cara Mengajukan Barang Baru</strong>:<br><br>
-      1. Buka menu <strong>Beranda</strong> atau <strong>Laporan</strong>.<br>
-      2. Klik tombol <strong>+ Tambah Barang</strong> atau <strong>Ajukan Barang</strong>.<br>
-      3. Isi Nama Barang, Unit (Kepesantrenan/SMK/SMP), Jumlah, & Harga Satuan.<br>
-      4. Masukkan Nomor WhatsApp Anda pada kolom WA pengajuan.<br>
-      5. Pastikan Tanda Tangan Digital telah terisi, lalu klik <strong>Daftarkan Barang</strong>.
+      📝 <strong>Panduan & Alur Pengadaan Barang SPMS</strong>:<br><br>
+      1. <strong>Pengajuan</strong>: User Inventaris mengeklik <strong>+ Tambah Barang</strong>, memilih unit (Kepesantrenan/SMK/SMP), melengkapi nama barang, jumlah, harga, & nomor WA pengaju.<br>
+      2. <strong>Notifikasi Otomatis</strong>: Notifikasi WhatsApp instan terkirim ke Direktur & Manager.<br>
+      3. <strong>Persetujuan</strong>: Direktur/Manager menyetujui (<strong>✓ Setuju</strong>) atau menolak (<strong>✕ Nolak</strong>).<br>
+      4. <strong>Notifikasi Admin</strong>: Setelah disetujui, notifikasi WA terkirim ke Admin.<br>
+      5. <strong>Pembelian</strong>: Admin mengeklik <strong>Tandai Dibeli</strong>, dan sistem mengirim notifikasi WA balasan ke pengaju!
     `;
   }
 
-  if (query.includes("setuju") || query.includes("persetujuan") || query.includes("acc")) {
+  // 2. PANDUAN PERSETUJUAN (MANAGER & DIREKTUR)
+  if (query.includes("setuju") || query.includes("persetujuan") || query.includes("acc") || query.includes("direktur") || query.includes("manager")) {
     return `
-      ✅ <strong>Panduan Persetujuan Pengadaan (Manager & Direktur)</strong>:<br><br>
-      1. Login sebagai Manager atau Direktur.<br>
-      2. Masuk ke halaman <strong>Persetujuan</strong>.<br>
-      3. Tinjau barang yang diajukan oleh Inventaris.<br>
-      4. Klik tombol hijau <strong>✓ Setuju</strong> atau merah <strong>✕ Nolak</strong>.<br>
-      5. Setelah disetujui, notifikasi otomatis terkirim ke Admin untuk dibeli.
+      ✅ <strong>Panduan Persetujuan (Manager & Direktur)</strong>:<br><br>
+      1. Buka halaman <strong>Persetujuan</strong> di portal manajemen.<br>
+      2. Tinjau barang yang diajukan oleh tim Inventaris.<br>
+      3. Klik <strong>✓ Setuju</strong> untuk mengonfirmasi pengadaan atau <strong>✕ Nolak</strong> jika pengajuan ditolak.<br>
+      4. Nomor WhatsApp Manager & Direktur diambil secara otomatis dari menu <strong>Profil Saya</strong> untuk menerima notifikasi pengajuan baru!
     `;
   }
 
+  // 3. PANDUAN PEMBELIAN ADMIN
   if (query.includes("beli") || query.includes("dibeli") || query.includes("admin")) {
     return `
-      🛒 <strong>Panduan Admin Menandai Barang Dibeli</strong>:<br><br>
-      1. Login sebagai Admin.<br>
-      2. Masuk ke menu <strong>Pembelian Barang</strong>.<br>
-      3. Pada baris barang yang berstatus <em>Disetujui</em>, klik tombol <strong>Tandai Dibeli</strong>.<br>
-      4. Sistem akan otomatis mengirim notifikasi WhatsApp ke Inventaris yang mengajukan barang tersebut!
+      🛒 <strong>Panduan Pembelian Barang oleh Admin</strong>:<br><br>
+      1. Login ke portal Admin (`admin.html`).<br>
+      2. Masuk ke halaman <strong>Pembelian Barang</strong>.<br>
+      3. Pada barang yang berstatus <em>Disetujui</em>, klik tombol <strong>Tandai Dibeli</strong>.<br>
+      4. Notifikasi WhatsApp otomatis terkirim langsung ke nomor WA pengaju (Inventaris) yang tertera pada pengajuan barang tersebut!
     `;
   }
 
-  if (query.includes("profil") || query.includes("nama") || query.includes("tanda tangan")) {
+  // 4. PANDUAN NOTIFIKASI WHATSAPP & FONNTE API
+  if (query.includes("wa") || query.includes("whatsapp") || query.includes("notif") || query.includes("fonnte")) {
     return `
-      👤 <strong>Panduan Edit Profil & Tanda Tangan</strong>:<br><br>
-      1. Klik menu <strong>Profil</strong> di sidebar atau navigasi bawah.<br>
+      📱 <strong>Penjelasan Sistem Notifikasi WhatsApp SPMS</strong>:<br><br>
+      • <strong>Pengajuan Baru</strong>: WA terkirim otomatis ke nomor profile Manager & Direktur.<br>
+      • <strong>Status Disetujui</strong>: WA terkirim otomatis ke nomor profile Admin.<br>
+      • <strong>Sudah Dibeli</strong>: WA terkirim otomatis ke nomor WA pengaju yang ditulis saat mengajukan barang.<br>
+      • <strong>Format +62</strong>: Seluruh nomor WA menggunakan format otomatis +62 tanpa bisa dihapus secara tidak sengaja.
+    `;
+  }
+
+  // 5. PANDUAN PROFIL & TANDA TANGAN DIGITAL
+  if (query.includes("profil") || query.includes("nama") || query.includes("tanda tangan") || query.includes("ttd")) {
+    return `
+      👤 <strong>Panduan Profil & Tanda Tangan Digital</strong>:<br><br>
+      1. Klik menu <strong>Profil Saya</strong>.<br>
       2. Masukkan <strong>Nama Lengkap Pengaju</strong>.<br>
-      3. Gambar tanda tangan Anda pada bidang kanvas.<br>
-      4. Klik <strong>Simpan Profil & Tanda Tangan</strong>.
+      3. Gambar tanda tangan digital Anda pada kanvas yang tersedia.<br>
+      4. Klik <strong>Simpan Profil & Tanda Tangan</strong> agar tersimpan sah di database sekolah.
     `;
   }
 
-  if (query.includes("status") || query.includes("cek")) {
+  // 6. PANDUAN EKSPOR & REKAP DATA
+  if (query.includes("cetak") || query.includes("print") || query.includes("excel") || query.includes("pdf") || query.includes("laporan")) {
     return `
-      📋 <strong>Panduan Lacak Status Barang</strong>:<br><br>
-      • ⏳ <em>Pending</em>: Menunggu persetujuan Manager/Direktur.<br>
-      • ✅ <em>Disetujui</em>: Sudah disetujui, menunggu dibeli Admin.<br>
-      • 🛒 <em>Sudah Dibeli</em>: Selesai dibeli oleh Admin.
+      📊 <strong>Panduan Rekapitulasi & Ekspor Laporan</strong>:<br><br>
+      • <strong>Cetak PDF/Print</strong>: Klik tombol <em>Cetak Laporan</em> untuk mencetak dokumen fisik lengkap dengan Tanda Tangan Digital.<br>
+      • <strong>Ekspor Excel</strong>: Klik <em>Ekspor Excel</em> untuk mengunduh rekapitulasi data pengadaan dalam format .xlsx.<br>
+      • <strong>Filter Data</strong>: Anda dapat memfilter pengajuan berdasarkan Unit (Kepesantrenan, SMK, SMP) & Status Persetujuan.
     `;
   }
 
-  // Search matching items in current database
+  // 7. PANDUAN SINKRONISASI SHEETDB & CLOUD
+  if (query.includes("database") || query.includes("sheet") || query.includes("cloud") || query.includes("sync")) {
+    return `
+      ☁️ <strong>Sistem Database Cloud SheetDB SPMS</strong>:<br><br>
+      • Seluruh data pengadaan tersinkronisasi otomatis dengan <strong>Google Sheets via SheetDB API Gateway</strong>.<br>
+      • Jika koneksi internet terputus, sistem akan menyimpan data sementara di <em>LocalStorage</em> lokal agar data tetap aman!
+    `;
+  }
+
+  // 8. PENCARIAN DATABASE REAL-TIME
   const matchedItems = items.filter(i => 
     i.name.toLowerCase().includes(query) || 
     i.dept.toLowerCase().includes(query) || 
@@ -2005,7 +2029,7 @@ function generateSmartAiResponse(text) {
       `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${i.price.toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval}</em>`
     ).join('<br>');
     return `
-      🔍 <strong>Hasil Analisis AI untuk "${escapeHtml(text)}"</strong>:<br><br>
+      🔍 <strong>Hasil Analisis Data Pengadaan untuk "${escapeHtml(text)}"</strong>:<br><br>
       Ditemukan <strong>${matchedItems.length} pengajuan barang</strong> yang cocok:<br><br>
       ${matchedList}<br><br>
       <em>Total nilai pengajuan terkait: Rp ${matchedItems.reduce((s, x) => s + (x.price * x.qty), 0).toLocaleString('id-ID')}</em>
@@ -2013,10 +2037,10 @@ function generateSmartAiResponse(text) {
   }
 
   return `
-    🤖 <strong>Analisis AI SPMS</strong>:<br><br>
-    Berdasarkan data sistem pengadaan sekolah saat ini:<br>
-    - Terdaftar <strong>${totalItems} barang</strong> dengan total nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
-    - Ada <strong>${pendingCount} pengajuan</strong> yang masih menunggu persetujuan.<br><br>
-    <em>Silakan klik tombol bantuan di atas atau tanyakan 'cara pengajuan', 'cara setuju', atau 'cara beli'!</em>
+    🤖 <strong>Analisis & Pengetahuan AI SPMS</strong>:<br><br>
+    Saya telah menguasai seluruh alur & fitur aplikasi SPMS Hibatullah IIBS:<br>
+    - Total Pengajuan: <strong>${totalItems} barang</strong> (Nilai: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>).<br>
+    - Menunggu Persetujuan: <strong>${pendingCount} barang</strong>.<br><br>
+    <em>Tanyakan kepada saya tentang 'cara pengajuan', 'notifikasi WA', 'tanda tangan', 'ekspor excel', atau nama barang tertentu!</em>
   `;
 }
