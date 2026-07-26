@@ -2164,10 +2164,13 @@ body.role-staff .col-aksi {
   }
 }
 
-@keyframes aiPulse {
-  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.6); }
-  70% { box-shadow: 0 0 0 14px rgba(124, 58, 237, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+#modal-ai-assistant {
+  z-index: 999999 !important;
+}
+#modal-ai-assistant.open {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .ai-modal-card {

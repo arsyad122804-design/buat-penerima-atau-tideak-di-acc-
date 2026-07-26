@@ -1845,22 +1845,25 @@ function initAiAssistant() {
 
   if (!modalAi) return;
 
-  const openModal = () => {
+  const openModal = (e) => {
+    if (e) e.preventDefault();
+    modalAi.style.display = "flex";
     modalAi.classList.add("open");
     if (inputAi) inputAi.focus();
   };
 
+  const closeModal = (e) => {
+    if (e) e.preventDefault();
+    modalAi.style.display = "none";
+    modalAi.classList.remove("open");
+  };
+
   if (btnOpenAi) btnOpenAi.addEventListener("click", openModal);
   if (btnHeaderAi) btnHeaderAi.addEventListener("click", openModal);
-
-  if (btnCloseAi) {
-    btnCloseAi.addEventListener("click", () => {
-      modalAi.classList.remove("open");
-    });
-  }
+  if (btnCloseAi) btnCloseAi.addEventListener("click", closeModal);
 
   modalAi.addEventListener("click", (e) => {
-    if (e.target === modalAi) modalAi.classList.remove("open");
+    if (e.target === modalAi) closeModal(e);
   });
 
   if (formAi) {
@@ -1880,7 +1883,10 @@ function escapeHtml(str) {
 
 window.askAiPrompt = function(queryText) {
   const modalAi = document.getElementById("modal-ai-assistant");
-  if (modalAi) modalAi.classList.add("open");
+  if (modalAi) {
+    modalAi.style.display = "flex";
+    modalAi.classList.add("open");
+  }
 
   const chatBody = document.getElementById("ai-chat-body");
   if (!chatBody) return;
@@ -1934,6 +1940,57 @@ function generateSmartAiResponse(text) {
   const urgentItems = items.filter(i => (i.urgency || '').toLowerCase().includes('urgen'));
   const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
+  if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar")) {
+    return `
+      📝 <strong>Panduan Cara Mengajukan Barang Baru</strong>:<br><br>
+      1. Buka menu <strong>Beranda</strong> atau <strong>Laporan</strong>.<br>
+      2. Klik tombol <strong>+ Tambah Barang</strong> atau <strong>Ajukan Barang</strong>.<br>
+      3. Isi Nama Barang, Unit (Kepesantrenan/SMK/SMP), Jumlah, & Harga Satuan.<br>
+      4. Masukkan Nomor WhatsApp Anda pada kolom WA pengajuan.<br>
+      5. Pastikan Tanda Tangan Digital telah terisi, lalu klik <strong>Daftarkan Barang</strong>.
+    `;
+  }
+
+  if (query.includes("setuju") || query.includes("persetujuan") || query.includes("acc")) {
+    return `
+      ✅ <strong>Panduan Persetujuan Pengadaan (Manager & Direktur)</strong>:<br><br>
+      1. Login sebagai Manager atau Direktur.<br>
+      2. Masuk ke halaman <strong>Persetujuan</strong>.<br>
+      3. Tinjau barang yang diajukan oleh Inventaris.<br>
+      4. Klik tombol hijau <strong>✓ Setuju</strong> atau merah <strong>✕ Nolak</strong>.<br>
+      5. Setelah disetujui, notifikasi otomatis terkirim ke Admin untuk dibeli.
+    `;
+  }
+
+  if (query.includes("beli") || query.includes("dibeli") || query.includes("admin")) {
+    return `
+      🛒 <strong>Panduan Admin Menandai Barang Dibeli</strong>:<br><br>
+      1. Login sebagai Admin.<br>
+      2. Masuk ke menu <strong>Pembelian Barang</strong>.<br>
+      3. Pada baris barang yang berstatus <em>Disetujui</em>, klik tombol <strong>Tandai Dibeli</strong>.<br>
+      4. Sistem akan otomatis mengirim notifikasi WhatsApp ke Inventaris yang mengajukan barang tersebut!
+    `;
+  }
+
+  if (query.includes("profil") || query.includes("nama") || query.includes("tanda tangan")) {
+    return `
+      👤 <strong>Panduan Edit Profil & Tanda Tangan</strong>:<br><br>
+      1. Klik menu <strong>Profil</strong> di sidebar atau navigasi bawah.<br>
+      2. Masukkan <strong>Nama Lengkap Pengaju</strong>.<br>
+      3. Gambar tanda tangan Anda pada bidang kanvas.<br>
+      4. Klik <strong>Simpan Profil & Tanda Tangan</strong>.
+    `;
+  }
+
+  if (query.includes("status") || query.includes("cek")) {
+    return `
+      📋 <strong>Panduan Lacak Status Barang</strong>:<br><br>
+      • ⏳ <em>Pending</em>: Menunggu persetujuan Manager/Direktur.<br>
+      • ✅ <em>Disetujui</em>: Sudah disetujui, menunggu dibeli Admin.<br>
+      • 🛒 <em>Sudah Dibeli</em>: Selesai dibeli oleh Admin.
+    `;
+  }
+
   // Search matching items in current database
   const matchedItems = items.filter(i => 
     i.name.toLowerCase().includes(query) || 
@@ -1941,7 +1998,7 @@ function generateSmartAiResponse(text) {
     (i.pengaju || '').toLowerCase().includes(query)
   );
 
-  if (matchedItems.length > 0 && !query.includes("ringkas") && !query.includes("budget") && !query.includes("urgen")) {
+  if (matchedItems.length > 0) {
     const matchedList = matchedItems.map(i => 
       `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${i.price.toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval}</em>`
     ).join('<br>');
@@ -1953,39 +2010,11 @@ function generateSmartAiResponse(text) {
     `;
   }
 
-  if (query.includes("ringkas") || query.includes("status") || query.includes("rekap") || query.includes("semua")) {
-    return `
-      📊 <strong>Ringkasan Pengadaan SPMS Hibatullah IIBS</strong>:<br><br>
-      • Total Barang Didaftarkan: <strong>${totalItems} barang</strong><br>
-      • Menunggu Persetujuan: <strong>${pendingCount} barang</strong> ⏳<br>
-      • Disetujui (Menunggu Beli): <strong>${Math.max(0, approvedCount - boughtCount)} barang</strong> ✅<br>
-      • Selesai Dibeli: <strong>${boughtCount} barang</strong> 🛒<br>
-      • Total Estimasi Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>
-    `;
-  }
-
-  if (query.includes("budget") || query.includes("anggaran") || query.includes("efisiensi") || query.includes("hemat") || query.includes("rekomendasi")) {
-    return `
-      💡 <strong>Rekomendasi Efisiensi Budget SPMS AI</strong>:<br><br>
-      1. <strong>Skala Prioritas</strong>: Saat ini total pengajuan mencapai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>. Utamakan persetujuan barang berstatus <em>Urgent</em> terlebih dahulu.<br>
-      2. <strong>Pembelian Kolektif</strong>: Gabungkan pengadaan unit SMK, SMP, & Kepesantrenan untuk menekan biaya pengiriman supplier.<br>
-      3. <strong>Analisis Pasar</strong>: Mintalah minimal 2 opsi vendor pembanding sebelum Admin mengeklik <em>Tandai Dibeli</em>.
-    `;
-  }
-
-  if (query.includes("urgen") || query.includes("penting") || query.includes("darurat")) {
-    if (urgentItems.length === 0) {
-      return `🚨 <strong>Status Urgensi</strong>: Saat ini <strong>tidak ada barang yang berstatus Urgent</strong>. Semua pengajuan berjalan pada urgensi Normal.`;
-    }
-    const list = urgentItems.map(i => `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs (Rp ${(i.qty * i.price).toLocaleString('id-ID')})`).join('<br>');
-    return `🚨 <strong>Daftar Pengajuan Urgent (${urgentItems.length} Barang)</strong>:<br><br>${list}<br><br><em>Disarankan Direktur/Manager segera meninjau persetujuan barang-barang di atas.</em>`;
-  }
-
   return `
     🤖 <strong>Analisis AI SPMS</strong>:<br><br>
     Berdasarkan data sistem pengadaan sekolah saat ini:<br>
-    - Terdaftar <strong>${totalItems} barang</strong> dengan total estimasi nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
-    - Ada <strong>${pendingCount} pengajuan</strong> yang masih menunggu persetujuan manajemen.<br><br>
-    <em>Coba tanyakan nama barang (seperti 'kasur', 'smk', 'arsyad') atau klik chip rekomendasi di atas!</em>
+    - Terdaftar <strong>${totalItems} barang</strong> dengan total nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
+    - Ada <strong>${pendingCount} pengajuan</strong> yang masih menunggu persetujuan.<br><br>
+    <em>Silakan klik tombol bantuan di atas atau tanyakan 'cara pengajuan', 'cara setuju', atau 'cara beli'!</em>
   `;
 }
