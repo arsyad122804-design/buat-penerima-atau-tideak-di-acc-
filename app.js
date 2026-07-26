@@ -2062,13 +2062,31 @@ window.askAiPrompt = async function(queryText) {
 };
 
 function generateSmartAiResponse(text) {
-  const query = text.toLowerCase();
+  const query = (text || "").trim().toLowerCase();
   const totalItems = items.length;
   const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
   const approvedCount = items.filter(i => i.approval === 'Disetujui').length;
   const boughtCount = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
   const urgentItems = items.filter(i => (i.urgency || '').toLowerCase().includes('urgen'));
-  const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  const totalRupiah = items.reduce((sum, i) => {
+    const p = parseFloat(i.price) || 0;
+    const q = parseInt(i.qty) || 1;
+    return sum + (p * q);
+  }, 0);
+
+  // 0. PANDUAN MENYAPA & PERCAKAPAN RAMAH (GREETING & SMALL TALK)
+  if (/^(hai|haii|haiii|halo|haloo|hello|helo|p|assalamu|assalamualaikum|pagi|siang|malam|bot|spms|woi|oi|gan|min|salam|tes|test)/i.test(query) || query.length <= 4) {
+    return `
+      Wa'alaikumsalam / Halo kak! 👋😊<br><br>
+      Saya <strong>SPMS AI Assistant</strong> 🤖, asisten pintar pengadaan sekolah Hibatullah IIBS.<br>
+      Ada yang bisa saya bantu hari ini? Anda bisa menanyakan tentang:
+      <br>• 📝 <em>"Cara pengajuan barang"</em>
+      <br>• ✅ <em>"Cara persetujuan Direktur & Manager"</em>
+      <br>• 🛒 <em>"Cara pembelian oleh Admin"</em>
+      <br>• 📱 <em>"Sistem notifikasi WhatsApp"</em>
+      <br>• 🔍 Atau ketik nama barang seperti <em>"kasur"</em>, <em>"proyektor"</em>, atau <em>"smk"</em>.
+    `;
+  }
 
   // 1. PANDUAN PENGAJUAN BARANG & ALUR SISTEM
   if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar") || query.includes("alur")) {
