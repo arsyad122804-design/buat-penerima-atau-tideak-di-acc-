@@ -753,9 +753,9 @@
         </div>
       </div>
 
-      <form id="form-ai-chat" class="ai-input-row">
-        <input type="text" id="ai-input-text" placeholder="Tanya AI tentang pengadaan atau anggaran..." autocomplete="off">
-        <button type="submit" class="ai-btn-send" title="Kirim Pertanyaan">
+      <form id="form-ai-chat" class="ai-input-row" onsubmit="submitAiForm(event)">
+        <input type="text" id="ai-input-text" placeholder="Tanya AI tentang pengadaan atau anggaran..." autocomplete="off" onkeydown="if(event.key==='Enter'){submitAiForm(event);}">
+        <button type="button" class="ai-btn-send" onclick="submitAiForm(event)" title="Kirim Pertanyaan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </form>

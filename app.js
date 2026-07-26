@@ -1855,12 +1855,26 @@ window.toggleAiModal = function(show) {
   }
 };
 
+window.submitAiForm = function(e) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  const inputAi = document.getElementById("ai-input-text");
+  if (!inputAi) return false;
+  const text = inputAi.value.trim();
+  if (!text) return false;
+
+  askAiPrompt(text);
+  inputAi.value = "";
+  return false;
+};
+
 function initAiAssistant() {
   const btnOpenAi = document.getElementById("btn-open-ai");
   const btnCloseAi = document.getElementById("btn-close-ai-modal");
   const modalAi = document.getElementById("modal-ai-assistant");
   const formAi = document.getElementById("form-ai-chat");
-  const inputAi = document.getElementById("ai-input-text");
 
   if (!modalAi) return;
 
@@ -1895,13 +1909,7 @@ function initAiAssistant() {
   });
 
   if (formAi) {
-    formAi.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const text = inputAi.value.trim();
-      if (!text) return;
-      askAiPrompt(text);
-      inputAi.value = "";
-    });
+    formAi.addEventListener("submit", (e) => submitAiForm(e));
   }
 }
 
