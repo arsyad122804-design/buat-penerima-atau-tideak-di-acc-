@@ -1837,17 +1837,21 @@ window.addEventListener("DOMContentLoaded", () => {
 // =====================================================
 function initAiAssistant() {
   const btnOpenAi = document.getElementById("btn-open-ai");
+  const btnHeaderAi = document.getElementById("btn-header-ai");
   const btnCloseAi = document.getElementById("btn-close-ai-modal");
   const modalAi = document.getElementById("modal-ai-assistant");
   const formAi = document.getElementById("form-ai-chat");
   const inputAi = document.getElementById("ai-input-text");
 
-  if (!btnOpenAi || !modalAi) return;
+  if (!modalAi) return;
 
-  btnOpenAi.addEventListener("click", () => {
+  const openModal = () => {
     modalAi.classList.add("open");
     if (inputAi) inputAi.focus();
-  });
+  };
+
+  if (btnOpenAi) btnOpenAi.addEventListener("click", openModal);
+  if (btnHeaderAi) btnHeaderAi.addEventListener("click", openModal);
 
   if (btnCloseAi) {
     btnCloseAi.addEventListener("click", () => {
