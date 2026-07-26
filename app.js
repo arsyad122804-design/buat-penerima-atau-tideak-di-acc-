@@ -1922,7 +1922,7 @@ function getGeminiApiKey() {
 async function fetchGeminiAiResponse(queryText) {
   const apiKey = getGeminiApiKey();
 
-  if (!apiKey || !apiKey.startsWith("AIzaSy")) {
+  if (!apiKey) {
     return generateSmartAiResponse(queryText);
   }
 
