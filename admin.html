@@ -21,6 +21,22 @@
         if (input) setTimeout(function() { input.focus(); }, 150);
       }
     }
+
+    function submitAiForm(e) {
+      if (e) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+      }
+      var input = document.getElementById("ai-input-text");
+      if (!input) return false;
+      var text = input.value.trim();
+      if (!text) return false;
+      if (window.askAiPrompt) {
+        window.askAiPrompt(text);
+      }
+      input.value = "";
+      return false;
+    }
   </script>
   <!-- Session Guard: redirect to login if not authenticated -->
   <script>
@@ -719,7 +735,8 @@
 
   <!-- Floating AI Assistant Button -->
   <button type="button" class="ai-fab-btn" id="btn-open-ai" onclick="toggleAiModal(true)" title="Asisten Pengadaan AI SPMS">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 0 0-6 6c0 3.31 2.69 6 6 6s6-2.69 6-6a6 6 0 0 0-6-6z"/></svg>
+    <span>🤖 Asisten AI</span>
   </button>
 
   <!-- MODAL: SPMS AI Assistant -->
