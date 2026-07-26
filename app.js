@@ -80,17 +80,18 @@ function getRoleWaNumber(targetRole) {
   return "";
 }
 
-function formatWaInput(val) {
+function cleanWaInputValue(val) {
   if (!val) return "";
   let digits = val.replace(/[^0-9]/g, "");
+  if (digits.startsWith("62")) digits = digits.slice(2);
+  else if (digits.startsWith("0")) digits = digits.slice(1);
+  return digits;
+}
+
+function formatWaInput(val) {
+  const digits = cleanWaInputValue(val);
   if (!digits) return "";
-  if (digits.startsWith("0")) {
-    digits = "62" + digits.slice(1);
-  } else if (!digits.startsWith("62")) {
-    digits = "62" + digits;
-  }
-  
-  const rest = digits.slice(2);
+  const rest = digits;
   if (rest.length <= 3) return `+62 ${rest}`;
   if (rest.length <= 7) return `+62 ${rest.slice(0, 3)}-${rest.slice(3)}`;
   return `+62 ${rest.slice(0, 3)}-${rest.slice(3, 7)}-${rest.slice(7, 12)}`;
@@ -623,7 +624,7 @@ function openModal(department = "Kepesantrenan") {
     const inputPengaju = document.getElementById("item-pengaju");
     const inputWa = document.getElementById("item-wa");
     if (prof.fullname && inputPengaju) inputPengaju.value = prof.fullname;
-    if (prof.wa && inputWa) inputWa.value = prof.wa;
+    if (prof.wa && inputWa) inputWa.value = cleanWaInputValue(prof.wa);
 
     if (prof.signature) {
       const activeCanvas = document.getElementById("signature-canvas");
@@ -1442,7 +1443,7 @@ function initProfileView() {
     else if (!defaultName && sessionUser.role === "admin") defaultName = "Admin SPMS";
 
     if (inputFullname) inputFullname.value = defaultName;
-    if (inputWa)       inputWa.value       = saved.wa || "";
+    if (inputWa)       inputWa.value       = cleanWaInputValue(saved.wa || "");
 
     if (saved.signature) {
       const img = new Image();
@@ -1472,7 +1473,8 @@ function initProfileView() {
   formProfile.addEventListener("submit", (e) => {
     e.preventDefault();
     const fullname = inputFullname ? inputFullname.value.trim() : "";
-    const wa       = inputWa ? inputWa.value.trim() : "";
+    const rawWa    = inputWa ? inputWa.value.trim() : "";
+    const wa       = rawWa ? formatWaInput(rawWa) : "";
     if (!fullname) {
       showToast("⚠️ Harap masukkan nama lengkap Anda!");
       return;
