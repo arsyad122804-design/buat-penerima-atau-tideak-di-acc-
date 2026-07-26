@@ -1840,13 +1840,18 @@ window.toggleAiModal = function(show) {
   if (!modalAi) return;
 
   if (show === false) {
-    modalAi.style.cssText = "display: none !important; opacity: 0 !important; visibility: hidden !important;";
     modalAi.classList.remove("open");
+    setTimeout(() => {
+      if (!modalAi.classList.contains("open")) {
+        modalAi.style.cssText = "display: none !important; opacity: 0 !important; visibility: hidden !important;";
+      }
+    }, 180);
   } else {
     modalAi.style.cssText = "display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important;";
+    void modalAi.offsetWidth;
     modalAi.classList.add("open");
     const inputAi = document.getElementById("ai-input-text");
-    if (inputAi) setTimeout(() => inputAi.focus(), 100);
+    if (inputAi) setTimeout(() => inputAi.focus(), 150);
   }
 };
 
