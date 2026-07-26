@@ -8,7 +8,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <script>
+    function toggleAiModal(show) {
+      var modal = document.getElementById("modal-ai-assistant");
+      if (!modal) return;
+      if (show === false) {
+        modal.style.cssText = "display: none !important; opacity: 0 !important; visibility: hidden !important;";
+        modal.classList.remove("open");
+      } else {
+        modal.style.cssText = "display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 9999999 !important;";
+        modal.classList.add("open");
+        var input = document.getElementById("ai-input-text");
+        if (input) setTimeout(function() { input.focus(); }, 100);
+      }
+    }
+  </script>
   <!-- Session Guard: redirect to login if not authenticated -->
   <script>
     (function() {
