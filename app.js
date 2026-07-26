@@ -80,9 +80,25 @@ function getRoleWaNumber(targetRole) {
   return "";
 }
 
+function formatWaInput(val) {
+  if (!val) return "";
+  let digits = val.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0")) {
+    digits = "62" + digits.slice(1);
+  } else if (!digits.startsWith("62")) {
+    digits = "62" + digits;
+  }
+  
+  const rest = digits.slice(2);
+  if (rest.length <= 3) return `+62 ${rest}`;
+  if (rest.length <= 7) return `+62 ${rest.slice(0, 3)}-${rest.slice(3)}`;
+  return `+62 ${rest.slice(0, 3)}-${rest.slice(3, 7)}-${rest.slice(7, 12)}`;
+}
+
 function resolveWaDisplay(item) {
   if (!item) return "—";
-  if (item.wa && item.wa.trim()) return item.wa.trim();
+  if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
   return "—";
 }
 
@@ -737,7 +753,7 @@ if (formRegisterItem) {
 
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const pengajuName = document.getElementById("item-pengaju").value.trim();
-    const waNumber    = document.getElementById("item-wa") ? document.getElementById("item-wa").value.trim() : "";
+    const waNumber    = document.getElementById("item-wa") ? formatWaInput(document.getElementById("item-wa").value.trim()) : "";
     const signatureData = canvas ? canvas.toDataURL() : "";
     
     const entries = document.querySelectorAll(".item-entry-group");
