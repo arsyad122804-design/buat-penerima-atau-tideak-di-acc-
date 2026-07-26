@@ -100,21 +100,6 @@ function formatWaInput(val) {
 function resolveWaDisplay(item) {
   if (!item) return "—";
   if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
-
-  const pengaju = (item.pengaju || "").toLowerCase().trim();
-  if (pengaju) {
-    const wa = getRoleWaNumber(pengaju);
-    if (wa) return formatWaInput(wa);
-  }
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith("spms_profile_")) {
-      const data = JSON.parse(localStorage.getItem(k) || "{}");
-      if (data && data.wa) return formatWaInput(data.wa);
-    }
-  }
-
   return "—";
 }
 
@@ -567,9 +552,11 @@ function renderAdminPurchasesTable() {
       <td style="font-weight:600;">${formatRupiah(i.qty * i.price)}</td>
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${i.pengaju || '—'}</span>
+        ${resolveWaDisplay(i) !== '—' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(i).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
           📱 ${resolveWaDisplay(i)}
         </a>
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
       </td>
       <td>
         <div style="display:flex; gap:8px; align-items:center;">
@@ -1094,9 +1081,11 @@ function renderTable() {
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${item.pengaju || '—'}</span>
+        ${resolveWaDisplay(item) !== '—' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(item).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
           📱 ${resolveWaDisplay(item)}
         </a>
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
       </td>
       <td>
         <div class="approval-badge ${meta.cls}">
@@ -1181,9 +1170,11 @@ function renderSubmissionTable() {
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${pengaju}</span>
+        ${resolveWaDisplay(item) !== '—' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(item).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
           📱 ${resolveWaDisplay(item)}
         </a>
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
       </td>
       <td>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
