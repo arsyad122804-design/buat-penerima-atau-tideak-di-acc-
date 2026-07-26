@@ -1,5 +1,5 @@
-// =====================================================
-// SPMS — App Logic
+﻿// =====================================================
+// SPMS â€” App Logic
 // =====================================================
 
 // ---- State ----
@@ -88,7 +88,7 @@ function formatWaInput(val) {
 }
 
 function resolveWaDisplay(item) {
-  if (!item) return "—";
+  if (!item) return "â€”";
   if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
 
   const pengaju = (item.pengaju || "").toLowerCase().trim();
@@ -120,20 +120,20 @@ function resolveWaDisplay(item) {
     if (savedProf && savedProf.wa) return formatWaInput(savedProf.wa);
   } catch(e) {}
 
-  return "—";
+  return "â€”";
 }
 
 async function sendWaDirect(phoneRaw, message) {
   const waClean = (phoneRaw || "").replace(/[^0-9]/g, "");
   if (!waClean) {
-    showToast("⚠️ Nomor WA tujuan belum diisi di profil!");
+    showToast("âš ï¸ Nomor WA tujuan belum diisi di profil!");
     return false;
   }
 
   let phone = waClean;
   if (phone.startsWith("0")) phone = "62" + phone.slice(1);
 
-  showToast(`📲 Mengirim notifikasi WA ke ${phone}...`);
+  showToast(`ðŸ“² Mengirim notifikasi WA ke ${phone}...`);
 
   try {
     const params = new URLSearchParams();
@@ -154,16 +154,16 @@ async function sendWaDirect(phoneRaw, message) {
     console.log("Fonnte WA Response:", data);
 
     if (data && (data.status === true || data.detail)) {
-      showToast(`✅ Notifikasi WA terkirim otomatis di latar belakang ke ${phone}!`);
+      showToast(`âœ… Notifikasi WA terkirim otomatis di latar belakang ke ${phone}!`);
       return true;
     } else {
       console.warn("Fonnte API response:", data);
-      showToast(`📲 Notifikasi WA terproses dikirim ke ${phone}`);
+      showToast(`ðŸ“² Notifikasi WA terproses dikirim ke ${phone}`);
       return true;
     }
   } catch (err) {
     console.warn("Fonnte API network error:", err);
-    showToast(`📲 Notifikasi WA terkirim di latar belakang`);
+    showToast(`ðŸ“² Notifikasi WA terkirim di latar belakang`);
     return false;
   }
 }
@@ -177,34 +177,34 @@ window.sendWaNotification = async function(id, action) {
   const dirPhone = getRoleWaNumber("direktur");
   const admPhone = getRoleWaNumber("admin");
 
-  // 2. WhatsApp number for Inventaris comes strictly from the WA number written in that item submission row (item.wa)!
+  // 2. WhatsApp number for Pengajuan comes strictly from the WA number written in that item submission row (item.wa)!
   const itemWaNumber = item.wa && item.wa.trim() ? item.wa.trim() : resolveWaDisplay(item);
 
   const actionClean = (action || item.approval || "Pending").trim();
 
-  // STAGE 1: Inventaris Submits Item -> WA sent automatically to Direktur & Manager (from Profile numbers)
+  // STAGE 1: Pengajuan Submits Item -> WA sent automatically to Direktur & Manager (from Profile numbers)
   if (actionClean === "Pengajuan Baru") {
-    const msg = `Assalamu'alaikum wr. wb.\n\nYth. Direktur & Manager,\n\nAda Pengajuan Barang Baru dari Inventaris:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *⏳ MENUNGGU PERSETUJUAN*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+    const msg = `Assalamu'alaikum wr. wb.\n\nYth. Direktur & Manager,\n\nAda Pengajuan Barang Baru dari Pengajuan:\nðŸ“¦ *Barang:* ${item.name}\nðŸ›ï¸ *Unit:* ${item.dept}\nðŸ”¢ *Jumlah:* ${item.qty} Pcs\nðŸ‘¤ *Pengaju:* ${item.pengaju || "Pengajuan"}\n\nStatus: *â³ MENUNGGU PERSETUJUAN*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
     if (mgrPhone) sendWaDirect(mgrPhone, msg);
     if (dirPhone) sendWaDirect(dirPhone, msg);
-    if (!mgrPhone && !dirPhone) showToast("⚠️ Nomor WA Direktur / Manager belum diisi di menu Profil!");
+    if (!mgrPhone && !dirPhone) showToast("âš ï¸ Nomor WA Direktur / Manager belum diisi di menu Profil!");
   } 
   // STAGE 2: Direktur or Manager Clicks Setuju -> WA sent automatically to Admin (from Admin Profile number)
   else if (actionClean === "Disetujui" || actionClean === "Disetujui Direktur" || actionClean === "Disetujui Manager") {
-    const msgAdm = `Assalamu'alaikum wr. wb.\n\nYth. Admin,\n\nPengadaan Barang Telah Disetujui & Siap Dibeli:\n📦 *Barang:* ${item.name}\n🏛️ *Unit:* ${item.dept}\n🔢 *Jumlah:* ${item.qty} Pcs\n👤 *Pengaju:* ${item.pengaju || "Inventaris"}\n\nStatus: *✅ DISETUJUI (Siap Dibeli)*\nSilakan lakukan proses pembelian.\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+    const msgAdm = `Assalamu'alaikum wr. wb.\n\nYth. Admin,\n\nPengadaan Barang Telah Disetujui & Siap Dibeli:\nðŸ“¦ *Barang:* ${item.name}\nðŸ›ï¸ *Unit:* ${item.dept}\nðŸ”¢ *Jumlah:* ${item.qty} Pcs\nðŸ‘¤ *Pengaju:* ${item.pengaju || "Pengajuan"}\n\nStatus: *âœ… DISETUJUI (Siap Dibeli)*\nSilakan lakukan proses pembelian.\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
     if (admPhone) sendWaDirect(admPhone, msgAdm);
-    else showToast("⚠️ Nomor WA Admin belum diisi di menu Profil!");
+    else showToast("âš ï¸ Nomor WA Admin belum diisi di menu Profil!");
   } 
-  // STAGE 3: Item Rejected -> WA sent to Inventaris (from item submission WA number)
+  // STAGE 3: Item Rejected -> WA sent to Pengajuan (from item submission WA number)
   else if (actionClean === "Ditolak") {
-    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Inventaris"},\n\nPengajuan barang Anda:\n📦 *Barang:* ${item.name}\n\nStatus Terbaru: *❌ DITOLAK MANAJEMEN*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-    if (itemWaNumber && itemWaNumber !== "—") sendWaDirect(itemWaNumber, msgInv);
+    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Pengajuan"},\n\nPengajuan barang Anda:\nðŸ“¦ *Barang:* ${item.name}\n\nStatus Terbaru: *âŒ DITOLAK MANAJEMEN*\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+    if (itemWaNumber && itemWaNumber !== "â€”") sendWaDirect(itemWaNumber, msgInv);
   } 
-  // STAGE 4: Admin Clicks Buy in Aksi -> WA sent automatically to Inventaris (using the WA number in that submission row!)
+  // STAGE 4: Admin Clicks Buy in Aksi -> WA sent automatically to Pengajuan (using the WA number in that submission row!)
   else if (actionClean.includes("DIBELI") || item.pembelian === "Sudah Dibeli") {
-    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Inventaris"},\n\nPengajuan barang Anda:\n📦 *Barang:* ${item.name}\n🔢 *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *🛒 SUDAH DIBELI ADMIN 🎉*\nBarang telah selesai dibelikan dan siap digunakan.\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
-    if (itemWaNumber && itemWaNumber !== "—") sendWaDirect(itemWaNumber, msgInv);
-    else showToast("⚠️ Nomor WA pengaju tidak diisi pada kolom pengajuan!");
+    const msgInv = `Assalamu'alaikum wr. wb.\n\nYth. ${item.pengaju || "Pengajuan"},\n\nPengajuan barang Anda:\nðŸ“¦ *Barang:* ${item.name}\nðŸ”¢ *Jumlah:* ${item.qty} Pcs\n\nStatus Terbaru: *ðŸ›’ SUDAH DIBELI ADMIN ðŸŽ‰*\nBarang telah selesai dibelikan dan siap digunakan.\n\nTerima kasih.\n_Sistem Pengadaan SPMS Hibatullah IIBS_`;
+    if (itemWaNumber && itemWaNumber !== "â€”") sendWaDirect(itemWaNumber, msgInv);
+    else showToast("âš ï¸ Nomor WA pengaju tidak diisi pada kolom pengajuan!");
   }
 };
 
@@ -300,7 +300,7 @@ async function fetchItems() {
 
 
 window.clearAllDatabaseData = async function() {
-  if (!confirm("⚠️ Apakah Anda yakin ingin MENGHAPUS SELURUH DATA pengajuan barang di database? Data yang dihapus tidak dapat dikembalikan.")) {
+  if (!confirm("âš ï¸ Apakah Anda yakin ingin MENGHAPUS SELURUH DATA pengajuan barang di database? Data yang dihapus tidak dapat dikembalikan.")) {
     return;
   }
   localStorage.removeItem("spms_items");
@@ -309,7 +309,7 @@ window.clearAllDatabaseData = async function() {
   localStorage.setItem("spms_db_cleared", "true");
   items = [];
   updateUI();
-  showToast("🗑️ Seluruh data pengajuan di database telah BERHASIL DIHAPUS!");
+  showToast("ðŸ—‘ï¸ Seluruh data pengajuan di database telah BERHASIL DIHAPUS!");
 
   try {
     await fetch(API_URL, {
@@ -508,9 +508,9 @@ window.markAsPurchased = async function(id) {
   item.pembelian = "Sudah Dibeli";
   saveLocalOverrides(id, item.approval, item.adminSignature, "Sudah Dibeli");
   updateUI();
-  showToast(`🛒 "${item.name}" telah selesai dibeli oleh Admin!`);
+  showToast(`ðŸ›’ "${item.name}" telah selesai dibeli oleh Admin!`);
 
-  // Automatically send background WhatsApp notification to Inventaris!
+  // Automatically send background WhatsApp notification to Pengajuan!
   if (typeof sendWaNotification === "function") {
     sendWaNotification(id, "SUDAH DIBELI OLEH ADMIN");
   }
@@ -550,7 +550,7 @@ function renderAdminHistoryTable() {
       </td>
       <td>
         <div class="approval-badge ${i.approval === 'Disetujui' && i.pembelian === 'Sudah Dibeli' ? 'approval-badge--approved' : i.approval === 'Disetujui' ? 'approval-badge--pending' : 'approval-badge--rejected'}">
-          <span>${i.approval === 'Disetujui' && i.pembelian === 'Sudah Dibeli' ? '✓' : i.approval === 'Disetujui' ? '⏳' : '✕'}</span> 
+          <span>${i.approval === 'Disetujui' && i.pembelian === 'Sudah Dibeli' ? 'âœ“' : i.approval === 'Disetujui' ? 'â³' : 'âœ•'}</span> 
           ${i.approval === 'Disetujui' && i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli' : i.approval === 'Disetujui' ? 'Disetujui (Blm Beli)' : i.approval}
         </div>
       </td>
@@ -573,12 +573,12 @@ function renderAdminPurchasesTable() {
       <td style="font-weight:600;">${i.qty} Pcs</td>
       <td style="font-weight:600;">${formatRupiah(i.qty * i.price)}</td>
       <td>
-        <span style="font-weight:600; color:var(--clr-text); display:block;">${i.pengaju || '—'}</span>
-        ${resolveWaDisplay(i) !== '—' ? `
+        <span style="font-weight:600; color:var(--clr-text); display:block;">${i.pengaju || 'â€”'}</span>
+        ${resolveWaDisplay(i) !== 'â€”' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(i).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
-          📱 ${resolveWaDisplay(i)}
+          ðŸ“± ${resolveWaDisplay(i)}
         </a>
-        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">ðŸ“± â€”</span>`}
       </td>
       <td>
         <div style="display:flex; gap:8px; align-items:center;">
@@ -588,7 +588,7 @@ function renderAdminPurchasesTable() {
       </td>
       <td>
         <div class="approval-badge ${i.pembelian === 'Sudah Dibeli' ? 'approval-badge--approved' : 'approval-badge--pending'}">
-          <span>${i.pembelian === 'Sudah Dibeli' ? '✓' : '⏳'}</span> ${i.pembelian}
+          <span>${i.pembelian === 'Sudah Dibeli' ? 'âœ“' : 'â³'}</span> ${i.pembelian}
         </div>
       </td>
       <td>
@@ -770,7 +770,7 @@ if (formRegisterItem) {
     // Validasi tanda tangan
     const canvas = document.getElementById("signature-canvas");
     if (canvas && isCanvasBlank(canvas)) {
-      showToast("⚠️ Harap isi tanda tangan terlebih dahulu!");
+      showToast("âš ï¸ Harap isi tanda tangan terlebih dahulu!");
       return;
     }
 
@@ -854,7 +854,7 @@ if (formRegisterItem) {
     // Instant UI update
     updateUI();
     closeModal();
-    showToast(`✅ ${addedCount} barang berhasil didaftarkan!`);
+    showToast(`âœ… ${addedCount} barang berhasil didaftarkan!`);
 
     // Trigger WA notification to Manager & Direktur for new submission
     if (newItems.length > 0) {
@@ -1071,11 +1071,11 @@ function renderTable() {
   if (tableEmptyState) tableEmptyState.style.display = "none";
 
   const approvalMeta = {
-    "Disetujui":          { cls: "approval-badge--approved", icon: "✓" },
-    "Disetujui Direktur": { cls: "approval-badge--approved", icon: "✓" },
-    "Disetujui Manager":  { cls: "approval-badge--approved", icon: "👔" },
-    "Pending":            { cls: "approval-badge--pending",  icon: "⏳" },
-    "Ditolak":            { cls: "approval-badge--rejected", icon: "✕" }
+    "Disetujui":          { cls: "approval-badge--approved", icon: "âœ“" },
+    "Disetujui Direktur": { cls: "approval-badge--approved", icon: "âœ“" },
+    "Disetujui Manager":  { cls: "approval-badge--approved", icon: "ðŸ‘”" },
+    "Pending":            { cls: "approval-badge--pending",  icon: "â³" },
+    "Ditolak":            { cls: "approval-badge--rejected", icon: "âœ•" }
   };
 
   filtered.forEach(item => {
@@ -1083,19 +1083,19 @@ function renderTable() {
     const total = item.price * item.qty;
     const isLow = item.qty < item.minStock;
     const approval = item.approval || "Pending";
-    let meta = approvalMeta[approval] || { cls: "approval-badge--pending", icon: "⏳" };
+    let meta = approvalMeta[approval] || { cls: "approval-badge--pending", icon: "â³" };
     let label = approval;
 
     if (item.pembelian === "Sudah Dibeli") {
-      meta = { cls: "approval-badge--approved", icon: "✓" };
+      meta = { cls: "approval-badge--approved", icon: "âœ“" };
       label = "Sudah Dibeli";
     }
 
     tr.innerHTML = `
       <td style="font-weight:700; ${isLow ? 'color:var(--clr-red);' : ''}">
         ${item.name}
-        ${isLow ? '<span style="display:block;font-size:10px;font-weight:600;color:var(--clr-red);">⚠ Stok Rendah</span>' : ''}
-        ${item.ulasan ? `<span style="display:block;font-size:11px;font-weight:400;color:var(--clr-muted,#64748b);margin-top:2px;font-style:italic;">💬 ${item.ulasan}</span>` : ''}
+        ${isLow ? '<span style="display:block;font-size:10px;font-weight:600;color:var(--clr-red);">âš  Stok Rendah</span>' : ''}
+        ${item.ulasan ? `<span style="display:block;font-size:11px;font-weight:400;color:var(--clr-muted,#64748b);margin-top:2px;font-style:italic;">ðŸ’¬ ${item.ulasan}</span>` : ''}
       </td>
       <td>
         <span style="font-weight:500; font-size: 13px; color:var(--clr-muted);">${item.tanggal || '17 Jul 2026'}</span>
@@ -1107,12 +1107,12 @@ function renderTable() {
       <td style="font-weight:500;">Rp ${item.price.toLocaleString("id-ID")}</td>
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
       <td>
-        <span style="font-weight:600; color:var(--clr-text); display:block;">${item.pengaju || '—'}</span>
-        ${resolveWaDisplay(item) !== '—' ? `
+        <span style="font-weight:600; color:var(--clr-text); display:block;">${item.pengaju || 'â€”'}</span>
+        ${resolveWaDisplay(item) !== 'â€”' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(item).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
-          📱 ${resolveWaDisplay(item)}
+          ðŸ“± ${resolveWaDisplay(item)}
         </a>
-        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">ðŸ“± â€”</span>`}
       </td>
       <td>
         <div class="approval-badge ${meta.cls}">
@@ -1167,9 +1167,9 @@ function renderSubmissionTable() {
   };
 
   const approvalMeta = {
-    "Disetujui": { cls: "approval-badge--approved", icon: "✓" },
-    "Pending":   { cls: "approval-badge--pending",  icon: "⏳" },
-    "Ditolak":   { cls: "approval-badge--rejected", icon: "✕" }
+    "Disetujui": { cls: "approval-badge--approved", icon: "âœ“" },
+    "Pending":   { cls: "approval-badge--pending",  icon: "â³" },
+    "Ditolak":   { cls: "approval-badge--rejected", icon: "âœ•" }
   };
 
   filtered.forEach((item, idx) => {
@@ -1179,13 +1179,13 @@ function renderSubmissionTable() {
     let apv = approvalMeta[approval] || approvalMeta["Pending"];
     let apvLabel = approval;
     if (approval === "Disetujui" && item.pembelian === "Sudah Dibeli") {
-      apv = { cls: "approval-badge--approved", icon: "✓" };
+      apv = { cls: "approval-badge--approved", icon: "âœ“" };
       apvLabel = "Sudah Dibeli";
     } else if (approval === "Disetujui") {
-      apv = { cls: "approval-badge--pending", icon: "⏳" };
+      apv = { cls: "approval-badge--pending", icon: "â³" };
       apvLabel = "Disetujui (Blm Beli)";
     }
-    const pengaju  = item.pengaju || "—";
+    const pengaju  = item.pengaju || "â€”";
     const waClean  = (item.wa || "").replace(/[^0-9]/g, "");
 
     const tr = document.createElement("tr");
@@ -1197,11 +1197,11 @@ function renderSubmissionTable() {
       <td style="font-weight:700;">Rp ${total.toLocaleString("id-ID")}</td>
       <td>
         <span style="font-weight:600; color:var(--clr-text); display:block;">${pengaju}</span>
-        ${resolveWaDisplay(item) !== '—' ? `
+        ${resolveWaDisplay(item) !== 'â€”' ? `
         <a href="https://api.whatsapp.com/send?phone=${resolveWaDisplay(item).replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" style="font-size:11px; font-weight:600; color:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Klik untuk chat WhatsApp langsung">
-          📱 ${resolveWaDisplay(item)}
+          ðŸ“± ${resolveWaDisplay(item)}
         </a>
-        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">📱 —</span>`}
+        ` : `<span style="font-size:11px; font-weight:500; color:var(--clr-muted, #94a3b8); display:inline-flex; align-items:center; gap:3px;">ðŸ“± â€”</span>`}
       </td>
       <td>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
@@ -1218,9 +1218,9 @@ function renderSubmissionTable() {
       </td>
       <td>
         <div class="approval-actions" style="display:flex; gap:6px; align-items:center;">
-          <button class="btn-approve" data-id="${item.id}" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Terima Pengajuan">✓ Terima</button>
-          <button class="btn-reject"  data-id="${item.id}" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Nolak Pengajuan">✕ Nolak</button>
-          <button class="btn-edit-item" data-id="${item.id}" style="background:#0284c7; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Edit Barang">✏️ Edit</button>
+          <button class="btn-approve" data-id="${item.id}" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Terima Pengajuan">âœ“ Terima</button>
+          <button class="btn-reject"  data-id="${item.id}" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Nolak Pengajuan">âœ• Nolak</button>
+          <button class="btn-edit-item" data-id="${item.id}" style="background:#0284c7; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" title="Edit Barang">âœï¸ Edit</button>
         </div>
       </td>
     `;
@@ -1310,7 +1310,7 @@ function renderSubmissionTable() {
         item.adminSignature = "";
         saveLocalOverrides(id, "Pending", "", item.pembelian || "Belum Dibeli");
         updateUI();
-        showToast(`⏳ "${item.name}" dikembalikan ke Pending.`);
+        showToast(`â³ "${item.name}" dikembalikan ke Pending.`);
 
         fetch(`${API_URL}/ID/${id}`, { 
           method: 'PATCH', 
@@ -1355,7 +1355,7 @@ function handleAdminSignatureConfirm(e) {
   if (e) e.preventDefault();
   const canvas = document.getElementById("admin-signature-canvas");
   if (canvas && isCanvasBlank(canvas)) {
-    showToast("⚠️ Harap isi tanda tangan terlebih dahulu!");
+    showToast("âš ï¸ Harap isi tanda tangan terlebih dahulu!");
     return;
   }
   const adminSignatureData = canvas ? canvas.toDataURL() : "";
@@ -1379,7 +1379,7 @@ function handleAdminSignatureConfirm(e) {
   // 2. Instant modal close & toast
   const modal = document.getElementById("modal-admin-signature");
   if (modal) modal.classList.remove("open");
-  showToast(`✅ Status berhasil diperbarui menjadi ${action}!`);
+  showToast(`âœ… Status berhasil diperbarui menjadi ${action}!`);
 
   // Automatically trigger WhatsApp notification synchronously
   if (currentApprovalId) {
@@ -1512,7 +1512,7 @@ function initProfileView() {
     const rawWa    = inputWa ? inputWa.value.trim() : "";
     const wa       = rawWa ? formatWaInput(rawWa) : "";
     if (!fullname) {
-      showToast("⚠️ Harap masukkan nama lengkap Anda!");
+      showToast("âš ï¸ Harap masukkan nama lengkap Anda!");
       return;
     }
 
@@ -1535,7 +1535,7 @@ function initProfileView() {
     if (userClean) localStorage.setItem("spms_profile_" + userClean, JSON.stringify(profileData));
     if (roleClean) localStorage.setItem("spms_profile_" + roleClean, JSON.stringify(profileData));
 
-    showToast("✅ Profil & Tanda Tangan berhasil disimpan!");
+    showToast("âœ… Profil & Tanda Tangan berhasil disimpan!");
   });
 }
 
@@ -1689,12 +1689,12 @@ window.addEventListener("DOMContentLoaded", () => {
       let newNotifs = [];
 
       if (session.role === "manager") {
-        // Manager sees Pending items from Inventaris
+        // Manager sees Pending items from Pengajuan
         newNotifs = items.filter(i => i.approval === "Pending").map(i => ({
           id: i.id,
           title: "Pengajuan Baru",
-          desc: `${i.pengaju || 'Inventaris'} mengajukan ${i.qty} Pcs ${i.name} (${i.dept})`,
-          icon: "⏳", cls: "notif-icon--pending",
+          desc: `${i.pengaju || 'Pengajuan'} mengajukan ${i.qty} Pcs ${i.name} (${i.dept})`,
+          icon: "â³", cls: "notif-icon--pending",
           isRead: readNotifs.includes(i.id)
         }));
       } else if (session.role === "direktur") {
@@ -1704,8 +1704,8 @@ window.addEventListener("DOMContentLoaded", () => {
           title: i.approval === "Disetujui Manager" ? "Persetujuan Manager" : "Pengajuan Baru",
           desc: i.approval === "Disetujui Manager" 
             ? `Manager telah menyetujui ${i.name}. Menunggu persetujuan Direktur.` 
-            : `${i.pengaju || 'Inventaris'} mengajukan ${i.qty} Pcs ${i.name}`,
-          icon: "👔", cls: "notif-icon--approved",
+            : `${i.pengaju || 'Pengajuan'} mengajukan ${i.qty} Pcs ${i.name}`,
+          icon: "ðŸ‘”", cls: "notif-icon--approved",
           isRead: readNotifs.includes(i.id)
         }));
       } else if (session.role === "admin") {
@@ -1714,11 +1714,11 @@ window.addEventListener("DOMContentLoaded", () => {
           id: i.id,
           title: "Siap Dibeli",
           desc: `Direktur telah menyetujui pengadaan ${i.qty} Pcs ${i.name}`,
-          icon: "🛒", cls: "notif-icon--approved",
+          icon: "ðŸ›’", cls: "notif-icon--approved",
           isRead: readNotifs.includes(i.id)
         }));
       } else {
-        // Inventaris / Staff: Sees when item is approved by Manager/Direktur or bought by Admin
+        // Pengajuan / Staff: Sees when item is approved by Manager/Direktur or bought by Admin
         newNotifs = items.filter(i => i.approval !== "Pending").map(i => {
           const isBought = i.pembelian === "Sudah Dibeli";
           const isApprovedDir = i.approval === "Disetujui" || i.approval === "Disetujui Direktur";
@@ -1726,24 +1726,24 @@ window.addEventListener("DOMContentLoaded", () => {
 
           let title = "Respon Pengajuan";
           let desc = `Pengajuan ${i.name} ${i.approval}`;
-          let icon = "📌";
+          let icon = "ðŸ“Œ";
 
           if (isBought) {
-            title = "Barang Sudah Dibeli Admin! 🎉";
+            title = "Barang Sudah Dibeli Admin! ðŸŽ‰";
             desc = `Pengajuan "${i.name}" (${i.qty} Pcs) telah selesai dibelikan oleh Admin.`;
-            icon = "✅";
+            icon = "âœ…";
           } else if (isApprovedDir) {
-            title = "Disetujui Direktur! ✔️";
+            title = "Disetujui Direktur! âœ”ï¸";
             desc = `Pengajuan "${i.name}" disetujui Direktur & diteruskan ke Admin untuk dibeli.`;
-            icon = "✔️";
+            icon = "âœ”ï¸";
           } else if (isApprovedMgr) {
-            title = "Disetujui Manager! 👔";
+            title = "Disetujui Manager! ðŸ‘”";
             desc = `Pengajuan "${i.name}" disetujui Manager & diteruskan ke Direktur.`;
-            icon = "👔";
+            icon = "ðŸ‘”";
           } else {
-            title = "Pengajuan Ditolak ✕";
+            title = "Pengajuan Ditolak âœ•";
             desc = `Pengajuan "${i.name}" ditolak oleh Manajemen.`;
-            icon = "❌";
+            icon = "âŒ";
           }
 
           return {
@@ -1813,7 +1813,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       closeEditItemModal();
       updateUI();
-      showToast(`✅ Data "${item.name}" berhasil diperbarui!`);
+      showToast(`âœ… Data "${item.name}" berhasil diperbarui!`);
 
       try {
         await fetch(`${API_URL}/ID/${id}`, {
@@ -1944,13 +1944,13 @@ async function fetchGeminiAiResponse(queryText) {
   const systemContext = `Kamu adalah SPMS AI Assistant, asisten pengadaan barang sekolah Hibatullah IIBS.
 
 Sistem ini memiliki 4 jenis pengguna:
-1. **Inventaris (Pengaju)** — Menginput pengajuan barang kebutuhan sekolah
-2. **Manager** — Menyetujui atau menolak pengajuan barang dari inventaris
-3. **Direktur** — Memberikan persetujuan final atas pengajuan yang sudah di-acc Manager
-4. **Admin** — Mengeksekusi pembelian fisik barang yang sudah disetujui, mencatat bukti, dan mengirim WA konfirmasi ke pengaju
+1. **Pengajuan (Pengaju)** â€” Menginput pengajuan barang kebutuhan sekolah
+2. **Manager** â€” Menyetujui atau menolak pengajuan barang dari Pengajuan
+3. **Direktur** â€” Memberikan persetujuan final atas pengajuan yang sudah di-acc Manager
+4. **Admin** â€” Mengeksekusi pembelian fisik barang yang sudah disetujui, mencatat bukti, dan mengirim WA konfirmasi ke pengaju
 
 Alur kerja SPMS:
-Inventaris input → notif WA ke Manager → Manager acc → notif WA ke Direktur → Direktur acc final → notif WA ke Admin → Admin beli & tandai sudah dibeli → notif WA ke Pengaju
+Pengajuan input â†’ notif WA ke Manager â†’ Manager acc â†’ notif WA ke Direktur â†’ Direktur acc final â†’ notif WA ke Admin â†’ Admin beli & tandai sudah dibeli â†’ notif WA ke Pengaju
 
 Data REAL database pengadaan sekarang:
 - Total Pengajuan: ${totalItems} barang
@@ -1969,8 +1969,8 @@ Aturan menjawab:
 - Jawab LANGSUNG sesuai pertanyaan, jangan preamble panjang
 - Gunakan data real di atas jika relevan
 - Gunakan bahasa Indonesia santai tapi profesional
-- Jika ditanya data (berapa barang, total anggaran, dll) — jawab pakai angka real di atas
-- Jika ditanya cara kerja/alur — jelaskan alur di atas secara singkat
+- Jika ditanya data (berapa barang, total anggaran, dll) â€” jawab pakai angka real di atas
+- Jika ditanya cara kerja/alur â€” jelaskan alur di atas secara singkat
 - Format dengan <strong>, <br>, <ul><li> jika membantu
 - Jangan pernah mulai jawaban dengan "Saya memahami..." atau "Tentu saja, pertanyaan Anda..."`;
 
@@ -2030,7 +2030,7 @@ window.askAiPrompt = async function(queryText) {
   const userMsg = document.createElement("div");
   userMsg.className = "ai-msg ai-msg--user";
   userMsg.innerHTML = `
-    <div class="ai-avatar">👤</div>
+    <div class="ai-avatar">ðŸ‘¤</div>
     <div class="ai-bubble">${escapeHtml(queryText)}</div>
   `;
   chatBody.appendChild(userMsg);
@@ -2042,9 +2042,9 @@ window.askAiPrompt = async function(queryText) {
   typingMsg.className = "ai-msg ai-msg--bot";
   typingMsg.id = typingId;
   typingMsg.innerHTML = `
-    <div class="ai-avatar">🤖</div>
+    <div class="ai-avatar">ðŸ¤–</div>
     <div class="ai-bubble" style="color:var(--clr-muted); font-style:italic;">
-      <span>SPMS AI sedang memproses... ⚡</span>
+      <span>SPMS AI sedang memproses... âš¡</span>
     </div>
   `;
   chatBody.appendChild(typingMsg);
@@ -2059,7 +2059,7 @@ window.askAiPrompt = async function(queryText) {
     const botMsg = document.createElement("div");
     botMsg.className = "ai-msg ai-msg--bot";
     botMsg.innerHTML = `
-      <div class="ai-avatar">🤖</div>
+      <div class="ai-avatar">ðŸ¤–</div>
       <div class="ai-bubble">${responseHtml}</div>
     `;
     chatBody.appendChild(botMsg);
@@ -2072,7 +2072,7 @@ window.askAiPrompt = async function(queryText) {
     const botMsg = document.createElement("div");
     botMsg.className = "ai-msg ai-msg--bot";
     botMsg.innerHTML = `
-      <div class="ai-avatar">🤖</div>
+      <div class="ai-avatar">ðŸ¤–</div>
       <div class="ai-bubble">${fallbackHtml}</div>
     `;
     chatBody.appendChild(botMsg);
@@ -2096,49 +2096,49 @@ function generateSmartAiResponse(text) {
   const deptCounts    = {};
   items.forEach(i => { deptCounts[i.dept] = (deptCounts[i.dept] || 0) + 1; });
   const deptList      = Object.entries(deptCounts).map(([d,c]) => `${d} (${c})`).join(', ');
-  const recentItems   = items.slice(0, 5).map(i => `• <strong>${i.name}</strong> (${i.dept}) — ${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval || 'Pending'}`).join('<br>');
-  const pendingList   = items.filter(i => (i.approval||'Pending')==='Pending').slice(0,5).map(i => `• <strong>${i.name}</strong> (${i.dept}) oleh ${i.pengaju||'—'}`).join('<br>');
-  const belumList     = items.filter(i => (i.approval==='Disetujui'||i.approval==='Disetujui Direktur') && i.pembelian!=='Sudah Dibeli').slice(0,5).map(i => `• <strong>${i.name}</strong> (${i.dept}) — Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} x ${i.qty}`).join('<br>');
+  const recentItems   = items.slice(0, 5).map(i => `â€¢ <strong>${i.name}</strong> (${i.dept}) â€” ${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli ðŸ›’' : i.approval || 'Pending'}`).join('<br>');
+  const pendingList   = items.filter(i => (i.approval||'Pending')==='Pending').slice(0,5).map(i => `â€¢ <strong>${i.name}</strong> (${i.dept}) oleh ${i.pengaju||'â€”'}`).join('<br>');
+  const belumList     = items.filter(i => (i.approval==='Disetujui'||i.approval==='Disetujui Direktur') && i.pembelian!=='Sudah Dibeli').slice(0,5).map(i => `â€¢ <strong>${i.name}</strong> (${i.dept}) â€” Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} x ${i.qty}`).join('<br>');
 
   // ===== SAPAAN =====
   if (/^(hai|haii|haiii|halo|haloo|hello|helo|assalamu|assalamualaikum|pagi|siang|malam|salam|tes|test|p\b|oi\b|woi\b|min\b|bot\b)/i.test(query) || query.length <= 3) {
-    return `Halo kak! 👋 Ada yang bisa dibantu hari ini? Saya bisa bantu soal pengajuan, persetujuan, pembelian, maupun info pengadaan SPMS! 😊`;
+    return `Halo kak! ðŸ‘‹ Ada yang bisa dibantu hari ini? Saya bisa bantu soal pengajuan, persetujuan, pembelian, maupun info pengadaan SPMS! ðŸ˜Š`;
   }
   if (query.includes("apa kabar") || query.includes("gimana kabar") || query.includes("kabar kamu") || query.includes("sehat")) {
-    return `Alhamdulillah baik kak, siap membantu penuh! 😊 Kakak sendiri gimana kabarnya? Ada yang ingin ditanyakan seputar pengadaan barang sekolah?`;
+    return `Alhamdulillah baik kak, siap membantu penuh! ðŸ˜Š Kakak sendiri gimana kabarnya? Ada yang ingin ditanyakan seputar pengadaan barang sekolah?`;
   }
   if (query.includes("siapa kamu") || query.includes("siapa anda") || query.includes("kamu itu apa") || query.includes("kamu bot") || (query.includes("siapa") && query.includes("spms"))) {
-    return `Saya SPMS AI Assistant 🤖 — asisten pintar pengadaan barang Hibatullah IIBS. Saya memahami alur kerja Inventaris, Manager, Direktur, dan Admin. Tanyakan apa saja kak! 😊`;
+    return `Saya SPMS AI Assistant ðŸ¤– â€” asisten pintar pengadaan barang Hibatullah IIBS. Saya memahami alur kerja Pengajuan, Manager, Direktur, dan Admin. Tanyakan apa saja kak! ðŸ˜Š`;
   }
   if (query.includes("terima kasih") || query.includes("makasih") || query.includes("thanks") || query.includes("thx")) {
-    return `Sama-sama kak! 😊 Senang bisa membantu. Kalau ada pertanyaan lain seputar pengadaan, jangan sungkan ya!`;
+    return `Sama-sama kak! ðŸ˜Š Senang bisa membantu. Kalau ada pertanyaan lain seputar pengadaan, jangan sungkan ya!`;
   }
 
   // ===== RINGKASAN UMUM =====
   if (query.includes("ringkasan") || query.includes("rekap") || query.includes("dashboard") || query.includes("statistik") || query.includes("overview")) {
-    return `📊 <strong>Ringkasan Pengadaan SPMS</strong>:<br><br>
-      • Total Pengajuan: <strong>${totalItems} barang</strong><br>
-      • Pending: <strong>${pendingCount}</strong> | Disetujui: <strong>${approvedCount}</strong> | Ditolak: <strong>${rejectedCount}</strong><br>
-      • Sudah Dibeli: <strong>${boughtCount}</strong> | Belum Dibeli (sudah acc): <strong>${belumCount}</strong><br>
-      • Total Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
-      • Realisasi Pembelian: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
-      • Barang Urgent: <strong>${urgentItems.length} barang</strong><br>
-      • Unit Aktif: ${deptList || '—'}`;
+    return `ðŸ“Š <strong>Ringkasan Pengadaan SPMS</strong>:<br><br>
+      â€¢ Total Pengajuan: <strong>${totalItems} barang</strong><br>
+      â€¢ Pending: <strong>${pendingCount}</strong> | Disetujui: <strong>${approvedCount}</strong> | Ditolak: <strong>${rejectedCount}</strong><br>
+      â€¢ Sudah Dibeli: <strong>${boughtCount}</strong> | Belum Dibeli (sudah acc): <strong>${belumCount}</strong><br>
+      â€¢ Total Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Realisasi Pembelian: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Barang Urgent: <strong>${urgentItems.length} barang</strong><br>
+      â€¢ Unit Aktif: ${deptList || 'â€”'}`;
   }
   if (query.includes("alur") || query.includes("cara kerja") || query.includes("mekanisme") || query.includes("sistem kerja")) {
-    return `🔄 <strong>Alur Kerja SPMS</strong>:<br><br>
-      <strong>1. Inventaris</strong> input pengajuan barang → notif WA ke Manager<br>
-      <strong>2. Manager</strong> review & setujui → notif WA ke Direktur<br>
-      <strong>3. Direktur</strong> acc final → notif WA ke Admin<br>
-      <strong>4. Admin</strong> beli barang & tandai selesai → notif WA ke Pengaju<br><br>
+    return `ðŸ”„ <strong>Alur Kerja SPMS</strong>:<br><br>
+      <strong>1. Pengajuan</strong> input pengajuan barang â†’ notif WA ke Manager<br>
+      <strong>2. Manager</strong> review & setujui â†’ notif WA ke Direktur<br>
+      <strong>3. Direktur</strong> acc final â†’ notif WA ke Admin<br>
+      <strong>4. Admin</strong> beli barang & tandai selesai â†’ notif WA ke Pengaju<br><br>
       <em>Setiap tahap ada notifikasi WhatsApp otomatis via Fonnte!</em>`;
   }
 
   // ============================================================
-  // ==================== INVENTARIS ============================
+  // ==================== Pengajuan ============================
   // ============================================================
   if (query.includes("cara ajukan") || query.includes("cara mengajukan") || (query.includes("ajukan") && query.includes("baru")) || query.includes("tambah barang baru")) {
-    return `📝 <strong>Cara Mengajukan Barang Baru (Inventaris)</strong>:<br><br>
+    return `ðŸ“ <strong>Cara Mengajukan Barang Baru (Pengajuan)</strong>:<br><br>
       1. Klik tombol <strong>+ Tambah Barang</strong> di halaman beranda<br>
       2. Pilih unit: Kepesantrenan / SMK / SMP<br>
       3. Isi nama barang, jumlah, harga satuan, urgensi<br>
@@ -2146,37 +2146,37 @@ function generateSmartAiResponse(text) {
       5. Isi nama pengaju & nomor WhatsApp<br>
       6. Gambar tanda tangan digital<br>
       7. Klik <strong>Simpan & Ajukan</strong><br><br>
-      📲 <em>Notifikasi WA otomatis dikirim ke Manager & Direktur!</em>`;
+      ðŸ“² <em>Notifikasi WA otomatis dikirim ke Manager & Direktur!</em>`;
   }
   if ((query.includes("lebih dari") || query.includes("beberapa") || query.includes("banyak barang") || query.includes("tambah barang lain")) && !query.includes("admin")) {
-    return `Bisa kak! 😊 Di form pengajuan ada tombol <strong>+ Tambah Barang Lain</strong> yang bisa diklik untuk menambah barang ke-2, ke-3, dst dalam satu pengajuan sekaligus.`;
+    return `Bisa kak! ðŸ˜Š Di form pengajuan ada tombol <strong>+ Tambah Barang Lain</strong> yang bisa diklik untuk menambah barang ke-2, ke-3, dst dalam satu pengajuan sekaligus.`;
   }
   if ((query.includes("format harga") || query.includes("isi harga") || query.includes("harga satuan")) && !query.includes("admin")) {
-    return `Untuk harga satuan, ketik angkanya saja kak, misalnya <strong>150000</strong> untuk Rp 150.000. Sistem akan otomatis memformat. Jangan tambahkan "Rp" atau titik manual! 😊`;
+    return `Untuk harga satuan, ketik angkanya saja kak, misalnya <strong>150000</strong> untuk Rp 150.000. Sistem akan otomatis memformat. Jangan tambahkan "Rp" atau titik manual! ðŸ˜Š`;
   }
   if ((query.includes("status pengajuan") || query.includes("barang saya") || query.includes("pengajuan saya") || (query.includes("cek") && query.includes("pengajuan"))) && !query.includes("semua")) {
-    return `Untuk cek status pengajuan, buka tab <strong>Laporan</strong> di menu navigasi. Di sana tampil semua barang beserta statusnya: Pending ⏳, Disetujui ✅, Ditolak ❌, Sudah Dibeli 🛒.<br><br>Total database: <strong>${totalItems} pengajuan</strong>.`;
+    return `Untuk cek status pengajuan, buka tab <strong>Laporan</strong> di menu navigasi. Di sana tampil semua barang beserta statusnya: Pending â³, Disetujui âœ…, Ditolak âŒ, Sudah Dibeli ðŸ›’.<br><br>Total database: <strong>${totalItems} pengajuan</strong>.`;
   }
   if (query.includes("ditolak") || query.includes("penolakan") || query.includes("kenapa ditolak") || query.includes("nggak disetujui")) {
-    return `Kalau pengajuan ditolak, biasanya karena pertimbangan anggaran atau kebutuhan kurang mendesak. Saat ini ada <strong>${rejectedCount} pengajuan</strong> yang ditolak.<br><br>💡 Tips: Ajukan ulang dengan keterangan yang lebih lengkap dan jelas!`;
+    return `Kalau pengajuan ditolak, biasanya karena pertimbangan anggaran atau kebutuhan kurang mendesak. Saat ini ada <strong>${rejectedCount} pengajuan</strong> yang ditolak.<br><br>ðŸ’¡ Tips: Ajukan ulang dengan keterangan yang lebih lengkap dan jelas!`;
   }
   if ((query.includes("lupa") || query.includes("salah") || query.includes("ganti")) && (query.includes("nomor") || query.includes("wa"))) {
-    return `Kalau nomor WA salah, minta bantuan Admin untuk edit data di panel admin ya kak. Atau ajukan ulang dengan nomor WA yang benar. 😊`;
+    return `Kalau nomor WA salah, minta bantuan Admin untuk edit data di panel admin ya kak. Atau ajukan ulang dengan nomor WA yang benar. ðŸ˜Š`;
   }
   if (query.includes("urgensi") || query.includes("normal atau urgent") || query.includes("pilih urgensi")) {
     return `Ada 2 pilihan urgensi kak:<br><br>
-      • <strong>Normal</strong> — kebutuhan rutin, tidak mendesak<br>
-      • <strong>Urgent</strong> — butuh segera karena event/kegiatan dekat<br><br>
-      Saat ini ada <strong>${urgentItems.length} barang</strong> dengan status Urgent. Gunakan hanya jika benar-benar mendesak! 😊`;
+      â€¢ <strong>Normal</strong> â€” kebutuhan rutin, tidak mendesak<br>
+      â€¢ <strong>Urgent</strong> â€” butuh segera karena event/kegiatan dekat<br><br>
+      Saat ini ada <strong>${urgentItems.length} barang</strong> dengan status Urgent. Gunakan hanya jika benar-benar mendesak! ðŸ˜Š`;
   }
   if (query.includes("tanda tangan") || query.includes("ttd") || query.includes("signature") || query.includes("kanvas")) {
-    return `Tanda tangan digital dibuat langsung di kanvas form pengajuan kak. Klik/sentuh kanvas, gambar tanda tangan, kalau salah klik <strong>Hapus</strong> untuk ulangi. Tanda tangan ini tersimpan sebagai bukti identitas pengaju! 😊`;
+    return `Tanda tangan digital dibuat langsung di kanvas form pengajuan kak. Klik/sentuh kanvas, gambar tanda tangan, kalau salah klik <strong>Hapus</strong> untuk ulangi. Tanda tangan ini tersimpan sebagai bukti identitas pengaju! ðŸ˜Š`;
   }
   if ((query.includes("unit") || query.includes("departemen") || query.includes("kepesantrenan") || query.includes("smk") || query.includes("smp")) && !query.includes("admin")) {
     return `Unit yang tersedia di SPMS:<br><br>
-      • <strong>Kepesantrenan</strong> — kebutuhan asrama & pesantren<br>
-      • <strong>SMK</strong> — kebutuhan sekolah menengah kejuruan<br>
-      • <strong>SMP</strong> — kebutuhan sekolah menengah pertama<br><br>
+      â€¢ <strong>Kepesantrenan</strong> â€” kebutuhan asrama & pesantren<br>
+      â€¢ <strong>SMK</strong> â€” kebutuhan sekolah menengah kejuruan<br>
+      â€¢ <strong>SMP</strong> â€” kebutuhan sekolah menengah pertama<br><br>
       ${deptList ? `Data saat ini: ${deptList}.` : ''}`;
   }
   if ((query.includes("sudah lama") || query.includes("lama pending") || query.includes("kapan disetujui") || query.includes("pending terus")) && !query.includes("admin")) {
@@ -2184,32 +2184,32 @@ function generateSmartAiResponse(text) {
   }
   if (query.includes("lihat semua") || query.includes("daftar semua") || query.includes("semua pengajuan") || query.includes("history pengajuan")) {
     return `Buka tab <strong>Laporan</strong> untuk melihat semua pengajuan kak. Bisa filter berdasarkan status, unit, atau cari nama barang.<br><br>
-      📊 Total: <strong>${totalItems} pengajuan</strong>:<br>${recentItems || '—'}`;
+      ðŸ“Š Total: <strong>${totalItems} pengajuan</strong>:<br>${recentItems || 'â€”'}`;
   }
   if ((query.includes("edit") || query.includes("ubah") || query.includes("revisi") || query.includes("ganti barang")) && (query.includes("pengajuan") || query.includes("barang"))) {
-    return `Pengajuan yang sudah dikirim tidak bisa diedit oleh Inventaris sendiri kak. Perlu minta bantuan <strong>Admin</strong> untuk mengubah data melalui panel edit. Sampaikan perubahan yang diperlukan ke Admin! 😊`;
+    return `Pengajuan yang sudah dikirim tidak bisa diedit oleh Pengajuan sendiri kak. Perlu minta bantuan <strong>Admin</strong> untuk mengubah data melalui panel edit. Sampaikan perubahan yang diperlukan ke Admin! ðŸ˜Š`;
   }
   if (query.includes("batalkan") || query.includes("batal pengajuan") || query.includes("hapus pengajuan")) {
-    return `Pembatalan pengajuan dilakukan oleh <strong>Admin</strong> atau bisa meminta Manager/Direktur untuk menolak pengajuan tersebut. Inventaris tidak bisa membatalkan sendiri. Hubungi Admin atau Manager! 😊`;
+    return `Pembatalan pengajuan dilakukan oleh <strong>Admin</strong> atau bisa meminta Manager/Direktur untuk menolak pengajuan tersebut. Pengajuan tidak bisa membatalkan sendiri. Hubungi Admin atau Manager! ðŸ˜Š`;
   }
   if (query.includes("estimasi harga") || query.includes("harga pasar") || query.includes("harga wajar") || query.includes("patokan harga")) {
-    return `Untuk estimasi harga, cek harga pasar terlebih dahulu (Tokopedia, Shopee, atau toko lokal) kak. Masukkan harga yang realistis agar mudah di-acc manajemen. Harga terlalu tinggi tanpa keterangan bisa menyebabkan pengajuan ditolak! 💡`;
+    return `Untuk estimasi harga, cek harga pasar terlebih dahulu (Tokopedia, Shopee, atau toko lokal) kak. Masukkan harga yang realistis agar mudah di-acc manajemen. Harga terlalu tinggi tanpa keterangan bisa menyebabkan pengajuan ditolak! ðŸ’¡`;
   }
   if (query.includes("urgent tidak") || query.includes("urgent belum") || query.includes("urgent tapi") || (query.includes("urgent") && query.includes("lama"))) {
-    return `Kalau pengajuan sudah Urgent tapi belum ada respons, coba hubungi Manager/Direktur langsung via WhatsApp kak. Saat ini ada <strong>${urgentItems.length} barang Urgent</strong>. Sistem sudah kirim notif otomatis, tapi terkadang perlu follow-up manual! 📱`;
+    return `Kalau pengajuan sudah Urgent tapi belum ada respons, coba hubungi Manager/Direktur langsung via WhatsApp kak. Saat ini ada <strong>${urgentItems.length} barang Urgent</strong>. Sistem sudah kirim notif otomatis, tapi terkadang perlu follow-up manual! ðŸ“±`;
   }
   if (query.includes("keterangan") || query.includes("ulasan") || query.includes("catatan") || (query.includes("isi") && query.includes("tambahan"))) {
-    return `Field <strong>Ulasan/Keterangan Tambahan</strong> ada di bawah Status Urgensi dalam form pengajuan kak. Isi dengan penjelasan mengapa barang diperlukan. Keterangan jelas membantu Manager/Direktur lebih cepat menyetujui! 💡`;
+    return `Field <strong>Ulasan/Keterangan Tambahan</strong> ada di bawah Status Urgensi dalam form pengajuan kak. Isi dengan penjelasan mengapa barang diperlukan. Keterangan jelas membantu Manager/Direktur lebih cepat menyetujui! ðŸ’¡`;
   }
   if ((query.includes("tidak muncul") || query.includes("nggak muncul") || query.includes("hilang")) && query.includes("laporan")) {
     return `Kalau pengajuan tidak muncul di laporan:<br><br>
-      1. Ada filter aktif — reset filter di halaman Laporan<br>
-      2. Koneksi internet terputus — coba ajukan ulang<br>
-      3. Data belum tersinkronisasi — refresh halaman dulu<br><br>
-      Hubungi Admin jika tetap tidak muncul! 😊`;
+      1. Ada filter aktif â€” reset filter di halaman Laporan<br>
+      2. Koneksi internet terputus â€” coba ajukan ulang<br>
+      3. Data belum tersinkronisasi â€” refresh halaman dulu<br><br>
+      Hubungi Admin jika tetap tidak muncul! ðŸ˜Š`;
   }
   if (query.includes("syarat") || query.includes("kriteria") || query.includes("supaya disetujui") || query.includes("biar acc")) {
-    return `💡 <strong>Tips Agar Pengajuan Cepat Disetujui</strong>:<br><br>
+    return `ðŸ’¡ <strong>Tips Agar Pengajuan Cepat Disetujui</strong>:<br><br>
       1. Nama barang spesifik & jelas<br>
       2. Harga estimasi realistis<br>
       3. Urgensi sesuai kebutuhan nyata<br>
@@ -2218,107 +2218,107 @@ function generateSmartAiResponse(text) {
       6. Tanda tangan digital terisi jelas`;
   }
   if ((query.includes("barang apa") || query.includes("apa saja yang")) && query.includes("diajukan")) {
-    return `📦 <strong>Pengajuan Terbaru</strong>:<br><br>
+    return `ðŸ“¦ <strong>Pengajuan Terbaru</strong>:<br><br>
       ${recentItems || 'Belum ada pengajuan'}<br><br>
       <em>Buka tab <strong>Laporan</strong> untuk melihat semua ${totalItems} pengajuan!</em>`;
   }
   if ((query.includes("berapa") && query.includes("pending")) || query.includes("yang belum disetujui")) {
-    return `Saat ini ada <strong>${pendingCount} barang</strong> yang masih menunggu persetujuan Manager/Direktur. ⏳<br><br>${pendingList ? `<strong>Di antaranya:</strong><br>${pendingList}` : ''}`;
+    return `Saat ini ada <strong>${pendingCount} barang</strong> yang masih menunggu persetujuan Manager/Direktur. â³<br><br>${pendingList ? `<strong>Di antaranya:</strong><br>${pendingList}` : ''}`;
   }
 
   // ============================================================
   // ==================== MANAGER ===============================
   // ============================================================
   if ((query.includes("cara setujui") || query.includes("cara menyetujui") || query.includes("bagaimana setujui")) && !query.includes("direktur")) {
-    return `✅ <strong>Cara Manager Menyetujui Pengajuan</strong>:<br><br>
+    return `âœ… <strong>Cara Manager Menyetujui Pengajuan</strong>:<br><br>
       1. Buka tab <strong>Persetujuan</strong><br>
       2. Lihat daftar barang Pending<br>
       3. Tinjau nama, unit, jumlah, dan harga<br>
-      4. Klik <strong>✓ Setuju</strong><br>
+      4. Klik <strong>âœ“ Setuju</strong><br>
       5. Sistem kirim notif WA ke <strong>Direktur</strong> untuk acc final<br><br>
-      Saat ini ada <strong>${pendingCount} barang</strong> menunggu. ⏳`;
+      Saat ini ada <strong>${pendingCount} barang</strong> menunggu. â³`;
   }
   if ((query.includes("cara tolak") || query.includes("cara menolak") || query.includes("reject")) && !query.includes("direktur")) {
-    return `❌ <strong>Cara Manager Menolak Pengajuan</strong>:<br><br>
+    return `âŒ <strong>Cara Manager Menolak Pengajuan</strong>:<br><br>
       1. Buka tab <strong>Persetujuan</strong><br>
       2. Temukan barang yang ingin ditolak<br>
-      3. Klik tombol <strong>✕ Tolak</strong><br>
+      3. Klik tombol <strong>âœ• Tolak</strong><br>
       4. Sistem kirim notif penolakan ke pengaju via WA<br><br>
       Saat ini ada <strong>${rejectedCount}</strong> pengajuan yang sudah ditolak.`;
   }
   if ((query.includes("menunggu") || query.includes("antre") || query.includes("perlu ditinjau")) && !query.includes("direktur") && !query.includes("admin")) {
-    return `Ada <strong>${pendingCount} pengajuan</strong> menunggu ditinjau Manager saat ini. ⏳<br><br>${pendingList ? `<strong>Di antaranya:</strong><br>${pendingList}` : '—'}`;
+    return `Ada <strong>${pendingCount} pengajuan</strong> menunggu ditinjau Manager saat ini. â³<br><br>${pendingList ? `<strong>Di antaranya:</strong><br>${pendingList}` : 'â€”'}`;
   }
   if ((query.includes("detail") || query.includes("informasi barang") || query.includes("lihat dulu")) && (query.includes("sebelum") || query.includes("tinjau"))) {
-    return `Di halaman Persetujuan, Manager bisa melihat detail setiap pengajuan — nama barang, unit, jumlah, harga satuan, total estimasi, pengaju, nomor WA, urgensi, dan keterangan tambahan. Semua ada sebelum acc! 😊`;
+    return `Di halaman Persetujuan, Manager bisa melihat detail setiap pengajuan â€” nama barang, unit, jumlah, harga satuan, total estimasi, pengaju, nomor WA, urgensi, dan keterangan tambahan. Semua ada sebelum acc! ðŸ˜Š`;
   }
   if ((query.includes("notif") || query.includes("notifikasi")) && query.includes("manager")) {
-    return `Manager mendapat notif WhatsApp otomatis setiap ada pengajuan baru dari Inventaris. Pastikan nomor WA Manager sudah diisi di menu <strong>Profil Saya</strong>! 📱`;
+    return `Manager mendapat notif WhatsApp otomatis setiap ada pengajuan baru dari Pengajuan. Pastikan nomor WA Manager sudah diisi di menu <strong>Profil Saya</strong>! ðŸ“±`;
   }
   if (query.includes("acc semua") || query.includes("setuju semua") || query.includes("approve semua")) {
-    return `Persetujuan dilakukan satu per satu kak untuk memastikan setiap pengajuan ditinjau dengan teliti. Manager bisa review detail masing-masing sebelum memutuskan! 😊`;
+    return `Persetujuan dilakukan satu per satu kak untuk memastikan setiap pengajuan ditinjau dengan teliti. Manager bisa review detail masing-masing sebelum memutuskan! ðŸ˜Š`;
   }
   if ((query.includes("urgent") || query.includes("prioritas")) && query.includes("manager")) {
     if (urgentItems.length > 0) {
-      const urgList = urgentItems.slice(0,5).map(i=>`• <strong>${i.name}</strong> (${i.dept}) — ${i.approval||'Pending'}`).join('<br>');
-      return `⚠️ Ada <strong>${urgentItems.length} barang URGENT</strong> yang perlu diprioritaskan Manager:<br><br>${urgList}<br><br>Segera ditinjau ya kak!`;
+      const urgList = urgentItems.slice(0,5).map(i=>`â€¢ <strong>${i.name}</strong> (${i.dept}) â€” ${i.approval||'Pending'}`).join('<br>');
+      return `âš ï¸ Ada <strong>${urgentItems.length} barang URGENT</strong> yang perlu diprioritaskan Manager:<br><br>${urgList}<br><br>Segera ditinjau ya kak!`;
     }
-    return `Saat ini tidak ada barang Urgent yang pending. Semua pengajuan berstatus Normal. 😊`;
+    return `Saat ini tidak ada barang Urgent yang pending. Semua pengajuan berstatus Normal. ðŸ˜Š`;
   }
   if ((query.includes("anggaran") || query.includes("total nilai")) && (query.includes("diajukan") || query.includes("pending") || query.includes("review"))) {
     const pendingRupiah = items.filter(i=>(i.approval||'Pending')==='Pending').reduce((s,i)=>s+((parseFloat(i.price)||0)*(parseInt(i.qty)||1)),0);
-    return `Total estimasi anggaran dari <strong>${pendingCount} pengajuan pending</strong>:<br><br><strong>Rp ${pendingRupiah.toLocaleString('id-ID')}</strong><br><br>Informasi ini bisa jadi pertimbangan Manager sebelum melakukan persetujuan. 💡`;
+    return `Total estimasi anggaran dari <strong>${pendingCount} pengajuan pending</strong>:<br><br><strong>Rp ${pendingRupiah.toLocaleString('id-ID')}</strong><br><br>Informasi ini bisa jadi pertimbangan Manager sebelum melakukan persetujuan. ðŸ’¡`;
   }
   if (query.includes("dari unit") || query.includes("per unit") || query.includes("per departemen") || query.includes("masing masing unit")) {
-    return `📊 <strong>Pengajuan Per Unit</strong>:<br><br>
+    return `ðŸ“Š <strong>Pengajuan Per Unit</strong>:<br><br>
       ${Object.entries(deptCounts).map(([d,c]) => {
         const unitRupiah = items.filter(i=>i.dept===d).reduce((s,i)=>s+((parseFloat(i.price)||0)*(parseInt(i.qty)||1)),0);
-        return `• <strong>${d}</strong>: ${c} barang — Rp ${unitRupiah.toLocaleString('id-ID')}`;
-      }).join('<br>') || '— Belum ada data —'}`;
+        return `â€¢ <strong>${d}</strong>: ${c} barang â€” Rp ${unitRupiah.toLocaleString('id-ID')}`;
+      }).join('<br>') || 'â€” Belum ada data â€”'}`;
   }
   if ((query.includes("sudah disetujui") || query.includes("yang di acc") || query.includes("history acc")) && !query.includes("direktur")) {
-    const accList = items.filter(i=>i.approval==='Disetujui'||i.approval==='Disetujui Direktur').slice(0,5).map(i=>`• <strong>${i.name}</strong> (${i.dept}) — ${i.pembelian==='Sudah Dibeli'?'Sudah Dibeli 🛒':'Menunggu Dibeli ⏳'}`).join('<br>');
-    return `✅ <strong>${approvedCount} pengajuan</strong> sudah disetujui manajemen:<br><br>${accList || '—'}<br><br>${boughtCount} sudah dibeli, ${belumCount} masih menunggu pembelian Admin.`;
+    const accList = items.filter(i=>i.approval==='Disetujui'||i.approval==='Disetujui Direktur').slice(0,5).map(i=>`â€¢ <strong>${i.name}</strong> (${i.dept}) â€” ${i.pembelian==='Sudah Dibeli'?'Sudah Dibeli ðŸ›’':'Menunggu Dibeli â³'}`).join('<br>');
+    return `âœ… <strong>${approvedCount} pengajuan</strong> sudah disetujui manajemen:<br><br>${accList || 'â€”'}<br><br>${boughtCount} sudah dibeli, ${belumCount} masih menunggu pembelian Admin.`;
   }
   if (query.includes("kewenangan manager") || query.includes("wewenang manager") || query.includes("tugas manager")) {
-    return `👔 <strong>Peran Manager di SPMS</strong>:<br><br>
-      • <strong>Review</strong> setiap pengajuan dari Inventaris<br>
-      • <strong>Setujui</strong> atau <strong>Tolak</strong> pengajuan<br>
-      • Setelah acc Manager, lanjut ke <strong>Direktur</strong> untuk acc final<br>
-      • Menerima notif WA setiap ada pengajuan baru<br><br>
-      Manager adalah filter pertama sebelum ke Direktur! 💡`;
+    return `ðŸ‘” <strong>Peran Manager di SPMS</strong>:<br><br>
+      â€¢ <strong>Review</strong> setiap pengajuan dari Pengajuan<br>
+      â€¢ <strong>Setujui</strong> atau <strong>Tolak</strong> pengajuan<br>
+      â€¢ Setelah acc Manager, lanjut ke <strong>Direktur</strong> untuk acc final<br>
+      â€¢ Menerima notif WA setiap ada pengajuan baru<br><br>
+      Manager adalah filter pertama sebelum ke Direktur! ðŸ’¡`;
   }
   if ((query.includes("tidak sampai") || query.includes("belum terima") || query.includes("nggak dapat notif")) && query.includes("manager")) {
     return `Kalau notif tidak sampai ke Manager:<br><br>
       1. Nomor WA Manager belum diisi di <strong>Profil Saya</strong><br>
       2. Format nomor salah (harus diawali 62, tanpa +)<br>
       3. Koneksi Fonnte API bermasalah<br><br>
-      Cek profil Manager dan pastikan nomor WA sudah benar! 📱`;
+      Cek profil Manager dan pastikan nomor WA sudah benar! ðŸ“±`;
   }
   if (query.includes("nama pengaju") || query.includes("siapa yang ajukan") || query.includes("pengaju siapa")) {
     const penList = [...new Set(items.map(i=>i.pengaju).filter(Boolean))].slice(0,8).join(', ');
-    return `Pengaju di database saat ini: <strong>${penList || '—'}</strong><br><br>Detail pengaju bisa dilihat di tab <strong>Laporan</strong> maupun <strong>Persetujuan</strong>. 😊`;
+    return `Pengaju di database saat ini: <strong>${penList || 'â€”'}</strong><br><br>Detail pengaju bisa dilihat di tab <strong>Laporan</strong> maupun <strong>Persetujuan</strong>. ðŸ˜Š`;
   }
   if (query.includes("pengajuan baru") || query.includes("ada baru") || query.includes("masuk pengajuan")) {
-    return `Ada <strong>${pendingCount} pengajuan</strong> menunggu review Manager saat ini. ⏳<br><br>${pendingList || 'Tidak ada detail.'}<br><br>Segera tinjau di tab <strong>Persetujuan</strong>! 😊`;
+    return `Ada <strong>${pendingCount} pengajuan</strong> menunggu review Manager saat ini. â³<br><br>${pendingList || 'Tidak ada detail.'}<br><br>Segera tinjau di tab <strong>Persetujuan</strong>! ðŸ˜Š`;
   }
   if (query.includes("berapa ditolak") || query.includes("total tolak") || query.includes("sudah berapa yang ditolak")) {
-    return `Sampai saat ini ada <strong>${rejectedCount} pengajuan</strong> yang ditolak oleh manajemen. ❌ Pengaju mendapat notif WA otomatis saat pengajuannya ditolak.`;
+    return `Sampai saat ini ada <strong>${rejectedCount} pengajuan</strong> yang ditolak oleh manajemen. âŒ Pengaju mendapat notif WA otomatis saat pengajuannya ditolak.`;
   }
   if ((query.includes("hp") || query.includes("handphone") || query.includes("ponsel") || query.includes("mobile")) && query.includes("setuju")) {
-    return `Bisa kak! SPMS bisa diakses dari HP via browser. Buka website SPMS → tab <strong>Persetujuan</strong> — tampilannya responsif untuk layar kecil. 📱`;
+    return `Bisa kak! SPMS bisa diakses dari HP via browser. Buka website SPMS â†’ tab <strong>Persetujuan</strong> â€” tampilannya responsif untuk layar kecil. ðŸ“±`;
   }
-  if (query.includes("minta revisi") || query.includes("revisi ke inventaris") || (query.includes("kembalikan") && query.includes("pengajuan"))) {
-    return `Belum ada fitur "Kembalikan untuk Revisi" otomatis. Manager bisa <strong>menolak</strong> pengajuan, lalu hubungi pengaju via WA untuk minta revisi dan ajukan ulang. 💡`;
+  if (query.includes("minta revisi") || query.includes("revisi ke Pengajuan") || (query.includes("kembalikan") && query.includes("pengajuan"))) {
+    return `Belum ada fitur "Kembalikan untuk Revisi" otomatis. Manager bisa <strong>menolak</strong> pengajuan, lalu hubungi pengaju via WA untuk minta revisi dan ajukan ulang. ðŸ’¡`;
   }
   if ((query.includes("total anggaran") || query.includes("keseluruhan anggaran") || query.includes("semua anggaran")) && !query.includes("pending")) {
-    return `📊 <strong>Anggaran Keseluruhan</strong>:<br><br>
-      • Total estimasi seluruh pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
-      • Sudah terealisasi (dibeli): <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
-      • Sisa yang belum dibeli: <strong>Rp ${(totalRupiah - boughtRupiah).toLocaleString('id-ID')}</strong>`;
+    return `ðŸ“Š <strong>Anggaran Keseluruhan</strong>:<br><br>
+      â€¢ Total estimasi seluruh pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Sudah terealisasi (dibeli): <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Sisa yang belum dibeli: <strong>Rp ${(totalRupiah - boughtRupiah).toLocaleString('id-ID')}</strong>`;
   }
   if (query.includes("update profil") || query.includes("ganti profil") || query.includes("edit profil") || query.includes("ubah profil")) {
-    return `👤 <strong>Cara Update Profil</strong>:<br><br>
+    return `ðŸ‘¤ <strong>Cara Update Profil</strong>:<br><br>
       1. Buka tab <strong>Profil Saya</strong><br>
       2. Perbarui nama lengkap & nomor WhatsApp<br>
       3. Perbarui tanda tangan digital jika perlu<br>
@@ -2330,62 +2330,62 @@ function generateSmartAiResponse(text) {
   // ==================== DIREKTUR ==============================
   // ============================================================
   if (query.includes("peran direktur") || query.includes("tugas direktur") || query.includes("wewenang direktur")) {
-    return `🏛️ <strong>Peran Direktur di SPMS</strong>:<br><br>
-      • Pemegang keputusan <strong>FINAL</strong> atas setiap pengajuan barang<br>
-      • Menerima notif WA setelah Manager acc<br>
-      • Klik <strong>Setujui Final</strong> untuk persetujuan penuh<br>
-      • Setelah Direktur acc, Admin langsung diberi notif untuk beli barang<br><br>
-      Tanpa acc Direktur, Admin tidak bisa beli barang! 💡`;
+    return `ðŸ›ï¸ <strong>Peran Direktur di SPMS</strong>:<br><br>
+      â€¢ Pemegang keputusan <strong>FINAL</strong> atas setiap pengajuan barang<br>
+      â€¢ Menerima notif WA setelah Manager acc<br>
+      â€¢ Klik <strong>Setujui Final</strong> untuk persetujuan penuh<br>
+      â€¢ Setelah Direktur acc, Admin langsung diberi notif untuk beli barang<br><br>
+      Tanpa acc Direktur, Admin tidak bisa beli barang! ðŸ’¡`;
   }
   if (query.includes("cara direktur") || (query.includes("direktur") && (query.includes("acc") || query.includes("setujui") || query.includes("persetujuan")))) {
-    return `🏛️ <strong>Cara Direktur Memberikan Persetujuan Final</strong>:<br><br>
+    return `ðŸ›ï¸ <strong>Cara Direktur Memberikan Persetujuan Final</strong>:<br><br>
       1. Buka tab <strong>Persetujuan</strong><br>
       2. Lihat pengajuan yang sudah di-acc Manager<br>
       3. Tinjau kebutuhan dan anggaran<br>
-      4. Klik <strong>✓ Setujui Final</strong><br>
+      4. Klik <strong>âœ“ Setujui Final</strong><br>
       5. Admin langsung menerima notif WA untuk membeli<br><br>
       <em>Saat ini ada ${pendingCount} pengajuan dalam proses.</em>`;
   }
   if (query.includes("kenapa ada direktur") || query.includes("mengapa direktur") || query.includes("fungsi direktur")) {
-    return `Direktur ada sebagai <strong>pengawas anggaran tertinggi</strong>. Setelah Manager acc dari sisi kebutuhan, Direktur memberikan persetujuan dari sisi anggaran & kebijakan sekolah. Ini memastikan tidak ada pembelian tanpa otorisasi level tertinggi! 💡`;
+    return `Direktur ada sebagai <strong>pengawas anggaran tertinggi</strong>. Setelah Manager acc dari sisi kebutuhan, Direktur memberikan persetujuan dari sisi anggaran & kebijakan sekolah. Ini memastikan tidak ada pembelian tanpa otorisasi level tertinggi! ðŸ’¡`;
   }
   if ((query.includes("notif") || query.includes("notifikasi")) && query.includes("direktur")) {
-    return `Direktur menerima notif WhatsApp otomatis <strong>setelah Manager menyetujui</strong>. Notif berisi: nama barang, unit, jumlah, harga, dan pengaju. Pastikan nomor WA Direktur diisi di <strong>Profil Saya</strong>! 📱`;
+    return `Direktur menerima notif WhatsApp otomatis <strong>setelah Manager menyetujui</strong>. Notif berisi: nama barang, unit, jumlah, harga, dan pengaju. Pastikan nomor WA Direktur diisi di <strong>Profil Saya</strong>! ðŸ“±`;
   }
   if ((query.includes("anggaran") || query.includes("nilai")) && query.includes("direktur")) {
     const accManagerRupiah = items.filter(i=>i.approval==='Disetujui').reduce((s,i)=>s+((parseFloat(i.price)||0)*(parseInt(i.qty)||1)),0);
-    return `📊 <strong>Ringkasan Anggaran untuk Direktur</strong>:<br><br>
-      • Sudah acc Manager & perlu acc Direktur: <strong>Rp ${accManagerRupiah.toLocaleString('id-ID')}</strong><br>
-      • Total semua pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
-      • Sudah terealisasi: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>`;
+    return `ðŸ“Š <strong>Ringkasan Anggaran untuk Direktur</strong>:<br><br>
+      â€¢ Sudah acc Manager & perlu acc Direktur: <strong>Rp ${accManagerRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Total semua pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Sudah terealisasi: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>`;
   }
   if (query.includes("direktur tolak") || query.includes("tolak setelah manager") || (query.includes("tolak") && query.includes("direktur"))) {
-    return `Ya bisa kak! Direktur bisa menolak pengajuan meskipun sudah di-acc Manager. Klik <strong>✕ Tolak</strong> dan pengaju mendapat notif WA bahwa pengajuannya tidak lolos persetujuan Direktur. 💡`;
+    return `Ya bisa kak! Direktur bisa menolak pengajuan meskipun sudah di-acc Manager. Klik <strong>âœ• Tolak</strong> dan pengaju mendapat notif WA bahwa pengajuannya tidak lolos persetujuan Direktur. ðŸ’¡`;
   }
   if (query.includes("sudah final") || query.includes("acc direktur") || query.includes("disetujui direktur")) {
     const dirAcc = items.filter(i=>i.approval==='Disetujui Direktur').length;
-    return `Total yang sudah mendapat <strong>persetujuan final Direktur</strong>: <strong>${dirAcc} barang</strong>. Dari jumlah itu, ${boughtCount} sudah dibeli Admin. 🎉`;
+    return `Total yang sudah mendapat <strong>persetujuan final Direktur</strong>: <strong>${dirAcc} barang</strong>. Dari jumlah itu, ${boughtCount} sudah dibeli Admin. ðŸŽ‰`;
   }
   if ((query.includes("review") || query.includes("tinjau")) && (query.includes("unit") || query.includes("departemen"))) {
-    return `📊 <strong>Anggaran Per Unit untuk Review Direktur</strong>:<br><br>
+    return `ðŸ“Š <strong>Anggaran Per Unit untuk Review Direktur</strong>:<br><br>
       ${Object.entries(deptCounts).map(([d,c]) => {
         const unitRupiah = items.filter(i=>i.dept===d).reduce((s,i)=>s+((parseFloat(i.price)||0)*(parseInt(i.qty)||1)),0);
         const unitBought = items.filter(i=>i.dept===d && i.pembelian==='Sudah Dibeli').length;
-        return `• <strong>${d}</strong>: ${c} barang | Anggaran: Rp ${unitRupiah.toLocaleString('id-ID')} | Dibeli: ${unitBought}`;
-      }).join('<br>') || '— Belum ada data —'}`;
+        return `â€¢ <strong>${d}</strong>: ${c} barang | Anggaran: Rp ${unitRupiah.toLocaleString('id-ID')} | Dibeli: ${unitBought}`;
+      }).join('<br>') || 'â€” Belum ada data â€”'}`;
   }
   if (query.includes("urutan") && (query.includes("acc") || query.includes("persetujuan"))) {
-    return `🔄 <strong>Urutan Persetujuan SPMS</strong>:<br><br>
-      <strong>1. Manager</strong> → review awal & setujui<br>
-      <strong>2. Direktur</strong> → persetujuan final<br>
-      <strong>3. Admin</strong> → eksekusi pembelian<br><br>
-      Setiap tahap harus dilalui secara berurutan! 💡`;
+    return `ðŸ”„ <strong>Urutan Persetujuan SPMS</strong>:<br><br>
+      <strong>1. Manager</strong> â†’ review awal & setujui<br>
+      <strong>2. Direktur</strong> â†’ persetujuan final<br>
+      <strong>3. Admin</strong> â†’ eksekusi pembelian<br><br>
+      Setiap tahap harus dilalui secara berurutan! ðŸ’¡`;
   }
   if ((query.includes("akses") || query.includes("login") || query.includes("masuk")) && query.includes("direktur")) {
-    return `Direktur mengakses SPMS via browser — buka website SPMS, navigasi ke tab <strong>Persetujuan</strong>. Tidak ada login terpisah. Pastikan profil (nama & nomor WA) sudah diisi! 😊`;
+    return `Direktur mengakses SPMS via browser â€” buka website SPMS, navigasi ke tab <strong>Persetujuan</strong>. Tidak ada login terpisah. Pastikan profil (nama & nomor WA) sudah diisi! ðŸ˜Š`;
   }
   if ((query.includes("laporan") || query.includes("report")) && query.includes("direktur")) {
-    return `📊 Buka tab <strong>Laporan</strong> untuk rekap lengkap semua pengajuan. Direktur bisa filter per unit, status, atau tanggal untuk evaluasi pengadaan.<br><br>
+    return `ðŸ“Š Buka tab <strong>Laporan</strong> untuk rekap lengkap semua pengajuan. Direktur bisa filter per unit, status, atau tanggal untuk evaluasi pengadaan.<br><br>
       Data: ${totalItems} pengajuan | Rp ${totalRupiah.toLocaleString('id-ID')} total anggaran.`;
   }
   if ((query.includes("tidak dapat") || query.includes("belum terima") || query.includes("nggak masuk")) && query.includes("notif") && query.includes("direktur")) {
@@ -2393,108 +2393,108 @@ function generateSmartAiResponse(text) {
       1. Nomor WA Direktur belum diisi/salah di <strong>Profil Saya</strong><br>
       2. Format harus diawali <strong>62</strong> (tanpa +)<br>
       3. Manager belum acc pengajuannya (notif ke Direktur dikirim setelah Manager acc)<br><br>
-      Cek profil terlebih dahulu! 📱`;
+      Cek profil terlebih dahulu! ðŸ“±`;
   }
   if (query.includes("transparan") || query.includes("transparansi") || query.includes("audit") || query.includes("evaluasi pengadaan")) {
-    return `📊 SPMS dirancang untuk transparansi penuh. Direktur bisa melihat:<br><br>
-      • Semua pengajuan dengan detail lengkap<br>
-      • Siapa pengaju, unit mana, harga berapa<br>
-      • Status real-time setiap pengajuan<br>
-      • Total anggaran terealisasi vs pending<br><br>
-      Semua terdokumentasi digital! 💡`;
+    return `ðŸ“Š SPMS dirancang untuk transparansi penuh. Direktur bisa melihat:<br><br>
+      â€¢ Semua pengajuan dengan detail lengkap<br>
+      â€¢ Siapa pengaju, unit mana, harga berapa<br>
+      â€¢ Status real-time setiap pengajuan<br>
+      â€¢ Total anggaran terealisasi vs pending<br><br>
+      Semua terdokumentasi digital! ðŸ’¡`;
   }
   if ((query.includes("hapus") || query.includes("delete")) && query.includes("direktur")) {
-    return `Penghapusan data dilakukan oleh <strong>Admin</strong> kak, bukan Direktur. Direktur hanya memiliki akses untuk menyetujui atau menolak. Ini menjaga integritas data! 💡`;
+    return `Penghapusan data dilakukan oleh <strong>Admin</strong> kak, bukan Direktur. Direktur hanya memiliki akses untuk menyetujui atau menolak. Ini menjaga integritas data! ðŸ’¡`;
   }
   if ((query.includes("belum dibeli") || query.includes("sudah acc tapi belum")) && (query.includes("direktur") || query.includes("perlu dibeli"))) {
-    return `Saat ini ada <strong>${belumCount} barang</strong> yang sudah dapat persetujuan manajemen namun <strong>belum dibeli Admin</strong>. ⚠️<br><br>
+    return `Saat ini ada <strong>${belumCount} barang</strong> yang sudah dapat persetujuan manajemen namun <strong>belum dibeli Admin</strong>. âš ï¸<br><br>
       ${belumList ? `<strong>Di antaranya:</strong><br>${belumList}` : ''}<br><br>
-      Hubungi Admin untuk segera proses pembelian! 🛒`;
+      Hubungi Admin untuk segera proses pembelian! ðŸ›’`;
   }
   if (query.includes("siapa saja pengaju") || query.includes("daftar pengaju") || (query.includes("siapa yang ajukan") && query.includes("direktur"))) {
     const penList2 = [...new Set(items.map(i=>i.pengaju).filter(Boolean))].join(', ');
-    return `Daftar pengaju: <strong>${penList2 || '—'}</strong><br><br>Detail lengkap di tab <strong>Laporan</strong>, termasuk nomor WA masing-masing. 😊`;
+    return `Daftar pengaju: <strong>${penList2 || 'â€”'}</strong><br><br>Detail lengkap di tab <strong>Laporan</strong>, termasuk nomor WA masing-masing. ðŸ˜Š`;
   }
   if (query.includes("perbedaan") && (query.includes("manager") || query.includes("direktur"))) {
-    return `📌 <strong>Perbedaan Manager & Direktur</strong>:<br><br>
+    return `ðŸ“Œ <strong>Perbedaan Manager & Direktur</strong>:<br><br>
       <strong>Manager:</strong><br>
-      • Review pertama dari sisi kebutuhan operasional<br>
-      • Persetujuan awal (bukan final)<br><br>
+      â€¢ Review pertama dari sisi kebutuhan operasional<br>
+      â€¢ Persetujuan awal (bukan final)<br><br>
       <strong>Direktur:</strong><br>
-      • Persetujuan FINAL dari sisi anggaran & kebijakan<br>
-      • Tanpa acc Direktur, Admin tidak bisa beli<br><br>
-      Keduanya mendapat notif WA di tahap masing-masing! 💡`;
+      â€¢ Persetujuan FINAL dari sisi anggaran & kebijakan<br>
+      â€¢ Tanpa acc Direktur, Admin tidak bisa beli<br><br>
+      Keduanya mendapat notif WA di tahap masing-masing! ðŸ’¡`;
   }
 
   // ============================================================
   // ==================== ADMIN =================================
   // ============================================================
   if ((query.includes("tandai") && query.includes("dibeli")) || (query.includes("cara") && query.includes("beli") && query.includes("admin"))) {
-    return `🛒 <strong>Cara Admin Memproses Pembelian</strong>:<br><br>
+    return `ðŸ›’ <strong>Cara Admin Memproses Pembelian</strong>:<br><br>
       1. Login ke portal <strong>Admin</strong> (admin.html)<br>
       2. Buka menu <strong>Pembelian Barang</strong><br>
       3. Lihat daftar barang berstatus <em>Disetujui</em><br>
       4. Klik <strong>Tandai Sudah Dibeli</strong> setelah barang berhasil dibeli<br>
-      5. Sistem kirim notif WA ke pengaju otomatis 🎉<br><br>
+      5. Sistem kirim notif WA ke pengaju otomatis ðŸŽ‰<br><br>
       <em>Saat ini ada <strong>${belumCount} barang</strong> menunggu pembelian!</em>`;
   }
   if ((query.includes("harus dibeli") || query.includes("perlu dibeli") || query.includes("tugas beli") || query.includes("antrian beli")) && !query.includes("direktur")) {
-    return `Saat ini ada <strong>${belumCount} barang</strong> yang sudah di-acc manajemen dan menunggu pembelian Admin. 🛒<br><br>
+    return `Saat ini ada <strong>${belumCount} barang</strong> yang sudah di-acc manajemen dan menunggu pembelian Admin. ðŸ›’<br><br>
       ${belumList ? `<strong>Di antaranya:</strong><br>${belumList}` : 'Tidak ada detail.'}<br><br>Segera proses pembelian ya kak!`;
   }
   if ((query.includes("edit") || query.includes("ubah data") || query.includes("perbaiki data")) && query.includes("admin")) {
-    return `✏️ <strong>Cara Admin Edit Data Barang</strong>:<br><br>
+    return `âœï¸ <strong>Cara Admin Edit Data Barang</strong>:<br><br>
       1. Buka halaman <strong>admin.html</strong><br>
       2. Cari barang yang ingin diedit<br>
       3. Klik tombol <strong>Edit</strong><br>
       4. Ubah data yang diperlukan<br>
       5. Klik <strong>Simpan Perubahan</strong><br><br>
-      Admin memiliki akses penuh untuk mengedit semua data! 💡`;
+      Admin memiliki akses penuh untuk mengedit semua data! ðŸ’¡`;
   }
   if ((query.includes("hapus") || query.includes("delete")) && query.includes("admin")) {
-    return `🗑️ <strong>Cara Admin Hapus Data</strong>:<br><br>
+    return `ðŸ—‘ï¸ <strong>Cara Admin Hapus Data</strong>:<br><br>
       1. Buka halaman <strong>admin.html</strong><br>
       2. Cari barang yang ingin dihapus<br>
       3. Klik tombol <strong>Hapus</strong><br>
       4. Konfirmasi penghapusan<br><br>
-      ⚠️ <em>Data yang dihapus tidak bisa dikembalikan!</em>`;
+      âš ï¸ <em>Data yang dihapus tidak bisa dikembalikan!</em>`;
   }
   if ((query.includes("lihat semua") || query.includes("tampilkan semua")) && query.includes("admin")) {
     return `Admin bisa melihat seluruh data dari menu di halaman admin.html:<br><br>
-      • <strong>Semua Barang</strong> — daftar lengkap seluruh pengajuan<br>
-      • <strong>Pembelian Barang</strong> — hanya yang perlu dibeli<br>
-      • <strong>Laporan</strong> — rekap dengan filter & statistik<br><br>
-      Total saat ini: <strong>${totalItems} barang</strong>. 📊`;
+      â€¢ <strong>Semua Barang</strong> â€” daftar lengkap seluruh pengajuan<br>
+      â€¢ <strong>Pembelian Barang</strong> â€” hanya yang perlu dibeli<br>
+      â€¢ <strong>Laporan</strong> â€” rekap dengan filter & statistik<br><br>
+      Total saat ini: <strong>${totalItems} barang</strong>. ðŸ“Š`;
   }
   if ((query.includes("tambah") || query.includes("input")) && query.includes("admin") && query.includes("barang")) {
-    return `Admin juga bisa input pengajuan barang langsung dari panel admin kak! Klik <strong>+ Tambah Barang</strong> di halaman admin. Berguna untuk pengajuan darurat yang tidak sempat diinput Inventaris. 😊`;
+    return `Admin juga bisa input pengajuan barang langsung dari panel admin kak! Klik <strong>+ Tambah Barang</strong> di halaman admin. Berguna untuk pengajuan darurat yang tidak sempat diinput Pengajuan. ðŸ˜Š`;
   }
   if ((query.includes("notif") || query.includes("notifikasi")) && query.includes("admin")) {
-    return `Admin mendapat notif WA otomatis <strong>setelah Direktur memberikan persetujuan final</strong>. Notif berisi nama barang, unit, jumlah, harga, dan pengaju. Pastikan nomor WA Admin diisi di <strong>Profil Admin</strong>! 📱`;
+    return `Admin mendapat notif WA otomatis <strong>setelah Direktur memberikan persetujuan final</strong>. Notif berisi nama barang, unit, jumlah, harga, dan pengaju. Pastikan nomor WA Admin diisi di <strong>Profil Admin</strong>! ðŸ“±`;
   }
   if ((query.includes("sudah dibeli") || query.includes("berhasil dibeli") || query.includes("realisasi")) && !query.includes("direktur")) {
-    return `🛒 Admin sudah menyelesaikan pembelian <strong>${boughtCount} barang</strong> dengan total nilai realisasi <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>.<br><br>Masih ada <strong>${belumCount} barang</strong> yang perlu segera dibeli!`;
+    return `ðŸ›’ Admin sudah menyelesaikan pembelian <strong>${boughtCount} barang</strong> dengan total nilai realisasi <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>.<br><br>Masih ada <strong>${belumCount} barang</strong> yang perlu segera dibeli!`;
   }
   if ((query.includes("konfirmasi") || query.includes("kabari") || query.includes("beritahu pengaju")) && query.includes("admin")) {
-    return `Konfirmasi pembelian dikirim <strong>otomatis</strong> via WA ke pengaju saat Admin klik <strong>Tandai Sudah Dibeli</strong>. Tidak perlu kirim manual! 📱🎉`;
+    return `Konfirmasi pembelian dikirim <strong>otomatis</strong> via WA ke pengaju saat Admin klik <strong>Tandai Sudah Dibeli</strong>. Tidak perlu kirim manual! ðŸ“±ðŸŽ‰`;
   }
   if (query.includes("profil admin") || (query.includes("profil saya") && query.includes("admin"))) {
-    return `👤 Admin juga punya profil di SPMS. Buka tab <strong>Profil Saya</strong> di halaman admin untuk isi:<br><br>
-      • Nama lengkap Admin<br>
-      • Nomor WhatsApp (penting untuk terima notif dari Direktur)<br>
-      • Tanda tangan digital<br><br>
-      Klik <strong>Simpan Profil & Tanda Tangan</strong> setelah diisi! 😊`;
+    return `ðŸ‘¤ Admin juga punya profil di SPMS. Buka tab <strong>Profil Saya</strong> di halaman admin untuk isi:<br><br>
+      â€¢ Nama lengkap Admin<br>
+      â€¢ Nomor WhatsApp (penting untuk terima notif dari Direktur)<br>
+      â€¢ Tanda tangan digital<br><br>
+      Klik <strong>Simpan Profil & Tanda Tangan</strong> setelah diisi! ðŸ˜Š`;
   }
   if ((query.includes("filter") || query.includes("cari") || query.includes("sortir")) && query.includes("admin")) {
     return `Admin bisa filter data berdasarkan:<br><br>
-      • <strong>Status</strong>: Pending, Disetujui, Ditolak, Sudah Dibeli<br>
-      • <strong>Unit</strong>: Kepesantrenan, SMK, SMP<br>
-      • <strong>Urgensi</strong>: Normal, Urgent<br>
-      • <strong>Pencarian nama barang</strong><br><br>
-      Sangat memudahkan saat database sudah banyak! 💡`;
+      â€¢ <strong>Status</strong>: Pending, Disetujui, Ditolak, Sudah Dibeli<br>
+      â€¢ <strong>Unit</strong>: Kepesantrenan, SMK, SMP<br>
+      â€¢ <strong>Urgensi</strong>: Normal, Urgent<br>
+      â€¢ <strong>Pencarian nama barang</strong><br><br>
+      Sangat memudahkan saat database sudah banyak! ðŸ’¡`;
   }
   if (query.includes("cetak") || query.includes("print") || query.includes("ekspor") || query.includes("download laporan")) {
-    return `Untuk cetak laporan, Admin bisa gunakan fitur print browser (Ctrl+P) saat di halaman <strong>Laporan</strong>. Tampilan sudah dioptimalkan untuk dicetak. Bisa juga screenshot untuk arsip cepat! 📄`;
+    return `Untuk cetak laporan, Admin bisa gunakan fitur print browser (Ctrl+P) saat di halaman <strong>Laporan</strong>. Tampilan sudah dioptimalkan untuk dicetak. Bisa juga screenshot untuk arsip cepat! ðŸ“„`;
   }
   if ((query.includes("tidak bisa akses") || query.includes("error") || query.includes("blank") || query.includes("tidak terbuka")) && query.includes("admin")) {
     return `Kalau halaman admin.html tidak bisa diakses, coba:<br><br>
@@ -2502,44 +2502,44 @@ function generateSmartAiResponse(text) {
       2. Bersihkan cache browser<br>
       3. Pastikan koneksi internet stabil<br>
       4. Coba browser lain<br><br>
-      Hubungi developer jika berlanjut! 💡`;
+      Hubungi developer jika berlanjut! ðŸ’¡`;
   }
-  if (query.includes("perbedaan") && (query.includes("admin") || query.includes("inventaris"))) {
-    return `📌 <strong>Perbedaan Admin & Inventaris</strong>:<br><br>
-      <strong>Inventaris:</strong><br>
-      • Input pengajuan barang<br>
-      • Tidak bisa edit/hapus setelah dikirim<br><br>
+  if (query.includes("perbedaan") && (query.includes("admin") || query.includes("Pengajuan"))) {
+    return `ðŸ“Œ <strong>Perbedaan Admin & Pengajuan</strong>:<br><br>
+      <strong>Pengajuan:</strong><br>
+      â€¢ Input pengajuan barang<br>
+      â€¢ Tidak bisa edit/hapus setelah dikirim<br><br>
       <strong>Admin:</strong><br>
-      • Eksekusi pembelian barang yang sudah di-acc<br>
-      • Bisa edit/hapus semua data<br>
-      • Akses penuh ke semua fitur panel admin 💡`;
+      â€¢ Eksekusi pembelian barang yang sudah di-acc<br>
+      â€¢ Bisa edit/hapus semua data<br>
+      â€¢ Akses penuh ke semua fitur panel admin ðŸ’¡`;
   }
   if ((query.includes("ubah status") || query.includes("ganti status") || query.includes("override status")) && query.includes("admin")) {
-    return `Admin bisa mengubah status pengajuan secara manual dari panel edit di halaman admin. Bisa ubah status persetujuan maupun pembelian. Gunakan dengan hati-hati agar data tetap akurat! 💡`;
+    return `Admin bisa mengubah status pengajuan secara manual dari panel edit di halaman admin. Bisa ubah status persetujuan maupun pembelian. Gunakan dengan hati-hati agar data tetap akurat! ðŸ’¡`;
   }
   if (query.includes("nomor wa admin") || query.includes("wa admin") || query.includes("whatsapp admin")) {
-    return `Nomor WA Admin digunakan sistem untuk mengirim notif saat ada barang yang sudah di-acc Direktur. Isi nomor WA Admin di <strong>Profil Saya → admin.html</strong> dengan format tanpa + (misal: 628123456789). 📱`;
+    return `Nomor WA Admin digunakan sistem untuk mengirim notif saat ada barang yang sudah di-acc Direktur. Isi nomor WA Admin di <strong>Profil Saya â†’ admin.html</strong> dengan format tanpa + (misal: 628123456789). ðŸ“±`;
   }
   if ((query.includes("laporan keuangan") || query.includes("rekap keuangan") || query.includes("pengeluaran")) && query.includes("admin")) {
-    return `📊 <strong>Rekap Keuangan Pembelian Admin</strong>:<br><br>
-      • Total nilai semua pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
-      • Sudah terealisasi: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
-      • Belum terealisasi: <strong>Rp ${(totalRupiah - boughtRupiah).toLocaleString('id-ID')}</strong><br>
-      • Barang sudah dibeli: <strong>${boughtCount} barang</strong>`;
+    return `ðŸ“Š <strong>Rekap Keuangan Pembelian Admin</strong>:<br><br>
+      â€¢ Total nilai semua pengajuan: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Sudah terealisasi: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong><br>
+      â€¢ Belum terealisasi: <strong>Rp ${(totalRupiah - boughtRupiah).toLocaleString('id-ID')}</strong><br>
+      â€¢ Barang sudah dibeli: <strong>${boughtCount} barang</strong>`;
   }
   if ((query.includes("kirim wa") || query.includes("hubungi pengaju") || query.includes("wa pengaju")) && query.includes("admin")) {
-    return `Di halaman Laporan, setiap baris pengajuan ada link WA pengaju yang bisa diklik langsung. Admin bisa langsung chat pengaju via WhatsApp tanpa perlu catat nomornya! 📱`;
+    return `Di halaman Laporan, setiap baris pengajuan ada link WA pengaju yang bisa diklik langsung. Admin bisa langsung chat pengaju via WhatsApp tanpa perlu catat nomornya! ðŸ“±`;
   }
   if (query.includes("sheetdb") || query.includes("database") || query.includes("sync data") || query.includes("data tersinkron")) {
-    return `SPMS menyimpan data ke <strong>SheetDB</strong> (Google Sheets sebagai database) secara real-time. Setiap pengajuan, persetujuan, dan pembelian otomatis tersinkronisasi. Kalau data tidak muncul, refresh halaman untuk tarik data terbaru! 💡`;
+    return `SPMS menyimpan data ke <strong>SheetDB</strong> (Google Sheets sebagai database) secara real-time. Setiap pengajuan, persetujuan, dan pembelian otomatis tersinkronisasi. Kalau data tidak muncul, refresh halaman untuk tarik data terbaru! ðŸ’¡`;
   }
   if ((query.includes("banyak pengajuan") || query.includes("kewalahan") || query.includes("kelola banyak")) && query.includes("admin")) {
-    return `💡 Tips Admin kelola banyak pengajuan sekaligus:<br><br>
+    return `ðŸ’¡ Tips Admin kelola banyak pengajuan sekaligus:<br><br>
       1. Gunakan <strong>filter status</strong> untuk tampilkan yang perlu dibeli saja<br>
       2. Urutkan berdasarkan <strong>Urgent</strong> untuk prioritaskan yang mendesak<br>
       3. Klik link WA pengaju untuk koordinasi langsung<br>
       4. Tandai sudah dibeli segera setelah pembelian<br><br>
-      Saat ini ada <strong>${belumCount} barang</strong> yang perlu diproses! 🛒`;
+      Saat ini ada <strong>${belumCount} barang</strong> yang perlu diproses! ðŸ›’`;
   }
 
   // ===== PENCARIAN DATABASE REAL-TIME =====
@@ -2552,22 +2552,23 @@ function generateSmartAiResponse(text) {
 
   if (matchedItems.length > 0) {
     const matchedList = matchedItems.slice(0, 8).map(i =>
-      `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval || 'Pending'}</em>`
+      `â€¢ <strong>${i.name}</strong> (${i.dept}) â€” ${i.qty} Pcs @ Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli ðŸ›’' : i.approval || 'Pending'}</em>`
     ).join('<br>');
     const totalVal = matchedItems.reduce((s, x) => s + ((parseFloat(x.price)||0) * (parseInt(x.qty)||1)), 0);
-    return `🔍 <strong>Hasil Pencarian: "${escapeHtml(text)}"</strong><br><br>
+    return `ðŸ” <strong>Hasil Pencarian: "${escapeHtml(text)}"</strong><br><br>
       Ditemukan <strong>${matchedItems.length} barang</strong>:<br><br>
       ${matchedList}<br><br>
       <em>Total nilai: Rp ${totalVal.toLocaleString('id-ID')}</em>`;
   }
 
   // ===== DEFAULT =====
-  return `Hmm, belum punya jawaban spesifik untuk itu kak. 😊 Coba tanyakan:<br><br>
-    • <em>Cara ajukan / setujui / beli barang</em><br>
-    • <em>Berapa barang pending / sudah dibeli</em><br>
-    • <em>Total anggaran / rekap per unit</em><br>
-    • <em>Peran admin / manager / direktur</em><br>
-    • Atau ketik nama barang untuk dicari di database!`;
+  return `Hmm, belum punya jawaban spesifik untuk itu kak. ðŸ˜Š Coba tanyakan:<br><br>
+    â€¢ <em>Cara ajukan / setujui / beli barang</em><br>
+    â€¢ <em>Berapa barang pending / sudah dibeli</em><br>
+    â€¢ <em>Total anggaran / rekap per unit</em><br>
+    â€¢ <em>Peran admin / manager / direktur</em><br>
+    â€¢ Atau ketik nama barang untuk dicari di database!`;
 }
+
 
 
