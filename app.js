@@ -91,14 +91,34 @@ function resolveWaDisplay(item) {
   if (!item) return "—";
   if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
 
-  const pengaju = (item.pengaju || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+  const pengaju = (item.pengaju || "").toLowerCase().trim();
   if (pengaju) {
-    const key = "spms_profile_" + pengaju;
+    const roleClean = pengaju.replace(/[^a-z0-9]/g, "_");
     try {
-      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      const data = JSON.parse(localStorage.getItem("spms_profile_" + roleClean) || "{}");
       if (data && data.wa) return formatWaInput(data.wa);
     } catch(e) {}
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("spms_profile_")) {
+          const profData = JSON.parse(localStorage.getItem(k) || "{}");
+          if (profData && profData.wa) {
+            const profName = (profData.fullname || "").toLowerCase();
+            if ((profName && (profName.includes(pengaju) || pengaju.includes(profName))) || k.includes(roleClean)) {
+              return formatWaInput(profData.wa);
+            }
+          }
+        }
+      }
+    } catch(e) {}
   }
+
+  try {
+    const savedProf = getSavedProfile();
+    if (savedProf && savedProf.wa) return formatWaInput(savedProf.wa);
+  } catch(e) {}
 
   return "—";
 }
