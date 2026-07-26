@@ -15,7 +15,9 @@
       if (!modal) return;
       if (show === false) {
         modal.classList.remove("open");
+        modal.style.display = "none";
       } else {
+        modal.style.display = "flex";
         modal.classList.add("open");
         var input = document.getElementById("ai-input-text");
         if (input) setTimeout(function() { input.focus(); }, 150);
@@ -749,7 +751,7 @@
           <span>🤖</span> SPMS AI Assistant
           <span class="ai-badge">Gemini Engine v2.0</span>
         </h3>
-        <button class="btn-close-modal" id="btn-close-ai-modal" onclick="toggleAiModal(false)" style="color:white; background:rgba(255,255,255,0.15);">
+        <button type="button" class="btn-close-modal" id="btn-close-ai-modal" onclick="toggleAiModal(false); if(event){event.preventDefault();event.stopPropagation();}" style="color:white; background:rgba(255,255,255,0.15); cursor:pointer;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>

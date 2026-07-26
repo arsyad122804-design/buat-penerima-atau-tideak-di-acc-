@@ -2169,6 +2169,15 @@ body.role-staff .col-aksi {
   }
 }
 
+#btn-close-ai-modal * {
+  pointer-events: none;
+}
+#btn-close-ai-modal {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 99999999 !important;
+}
+
 #modal-ai-assistant {
   position: fixed !important;
   inset: 0 !important;

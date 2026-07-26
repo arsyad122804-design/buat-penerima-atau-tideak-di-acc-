@@ -1842,7 +1842,9 @@ window.toggleAiModal = function(show) {
 
   if (show === false) {
     modalAi.classList.remove("open");
+    modalAi.style.display = "none";
   } else {
+    modalAi.style.display = "flex";
     modalAi.classList.add("open");
     const inputAi = document.getElementById("ai-input-text");
     if (inputAi) setTimeout(() => inputAi.focus(), 150);
