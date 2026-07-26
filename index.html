@@ -14,13 +14,11 @@
       var modal = document.getElementById("modal-ai-assistant");
       if (!modal) return;
       if (show === false) {
-        modal.style.cssText = "display: none !important; opacity: 0 !important; visibility: hidden !important;";
         modal.classList.remove("open");
       } else {
-        modal.style.cssText = "display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 9999999 !important;";
         modal.classList.add("open");
         var input = document.getElementById("ai-input-text");
-        if (input) setTimeout(function() { input.focus(); }, 100);
+        if (input) setTimeout(function() { input.focus(); }, 150);
       }
     }
   </script>
@@ -610,8 +608,7 @@
 
   <!-- Floating AI Assistant Button -->
   <button type="button" class="ai-fab-btn" id="btn-open-ai" onclick="toggleAiModal(true)" title="Asisten Pengadaan AI SPMS">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 0 0-6 6c0 3.31 2.69 6 6 6s6-2.69 6-6a6 6 0 0 0-6-6z"/></svg>
-    <span>🤖 Asisten AI</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
   </button>
 
   <!-- MODAL: SPMS AI Assistant -->
