@@ -1909,7 +1909,86 @@ function escapeHtml(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-window.askAiPrompt = function(queryText) {
+function getGeminiApiKey() {
+  try {
+    return atob("QVEuQWI4Uk42SzRma0RmVnRibmd3cXJlek1COVRrMFZMbDE2ZVNtVEpjRVJRc3NHSzNpYkE=");
+  } catch(e) {
+    return "";
+  }
+}
+
+async function fetchGeminiAiResponse(queryText) {
+  const apiKey = getGeminiApiKey();
+  const totalItems = items.length;
+  const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
+  const approvedCount = items.filter(i => i.approval === 'Disetujui').length;
+  const boughtCount = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
+  const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+  const databaseSummary = items.slice(0, 15).map(i => 
+    `- ${i.name} (${i.dept}): ${i.qty} Pcs @ Rp ${i.price} (Pengaju: ${i.pengaju || 'Staff'}, Status: ${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli' : i.approval})`
+  ).join("\n");
+
+  const systemContext = `Anda adalah SPMS AI Assistant 🤖, asisten pengadaan dan panduan aplikasi pintar untuk SPMS (School Procurement Management System) Hibatullah IIBS.
+
+Data Live Pengadaan Sekolah Saat Ini:
+- Total Pengajuan: ${totalItems} barang
+- Pending Persetujuan: ${pendingCount} barang
+- Disetujui: ${approvedCount} barang
+- Selesai Dibeli: ${boughtCount} barang
+- Total Estimasi Anggaran: Rp ${totalRupiah.toLocaleString('id-ID')}
+
+Sampel Data Barang di Database:
+${databaseSummary}
+
+Petunjuk Respons:
+1. Jawablah dengan sopan, jelas, profesional, dan ramah dalam bahasa Indonesia.
+2. Gunakan format HTML sederhana seperti <strong>, <em>, <br>, atau list <ul><li> jika membantu keterbacaan.
+3. Bantu jelaskan alur pengajuan barang, persetujuan Manager/Direktur, pembelian Admin, notifikasi WA Fonnte (+62), profil tanda tangan digital, maupun analisis budget sesuai pertanyaan user.`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: systemContext },
+              { text: `Pertanyaan Pengguna: ${queryText}` }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800
+        }
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (rawText) {
+        let formatted = rawText
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/\n\n/g, '<br><br>')
+          .replace(/\n/g, '<br>');
+        return formatted;
+      }
+    }
+  } catch (err) {
+    console.warn("Gemini API call failed, falling back to internal engine:", err);
+  }
+
+  return generateSmartAiResponse(queryText);
+}
+
+window.askAiPrompt = async function(queryText) {
   const modalAi = document.getElementById("modal-ai-assistant");
   if (modalAi) {
     modalAi.style.display = "flex";
@@ -1936,18 +2015,18 @@ window.askAiPrompt = function(queryText) {
   typingMsg.innerHTML = `
     <div class="ai-avatar">🤖</div>
     <div class="ai-bubble" style="color:var(--clr-muted); font-style:italic;">
-      <span>SPMS AI sedang memproses... ⚡</span>
+      <span>SPMS AI (Gemini 1.5 Flash) sedang memikirkan jawaban... ⚡</span>
     </div>
   `;
   chatBody.appendChild(typingMsg);
   chatBody.scrollTop = chatBody.scrollHeight;
 
-  // 3. Generate AI Response after slight delay
-  setTimeout(() => {
+  // 3. Fetch Gemini AI Response asynchronously with fallback
+  try {
+    const responseHtml = await fetchGeminiAiResponse(queryText);
     const indicator = document.getElementById("ai-typing-indicator");
     if (indicator) indicator.remove();
 
-    const responseHtml = generateSmartAiResponse(queryText);
     const botMsg = document.createElement("div");
     botMsg.className = "ai-msg ai-msg--bot";
     botMsg.innerHTML = `
@@ -1956,7 +2035,20 @@ window.askAiPrompt = function(queryText) {
     `;
     chatBody.appendChild(botMsg);
     chatBody.scrollTop = chatBody.scrollHeight;
-  }, 400);
+  } catch (err) {
+    const indicator = document.getElementById("ai-typing-indicator");
+    if (indicator) indicator.remove();
+
+    const fallbackHtml = generateSmartAiResponse(queryText);
+    const botMsg = document.createElement("div");
+    botMsg.className = "ai-msg ai-msg--bot";
+    botMsg.innerHTML = `
+      <div class="ai-avatar">🤖</div>
+      <div class="ai-bubble">${fallbackHtml}</div>
+    `;
+    chatBody.appendChild(botMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
 };
 
 function generateSmartAiResponse(text) {
