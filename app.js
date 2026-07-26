@@ -82,22 +82,7 @@ function getRoleWaNumber(targetRole) {
 
 function resolveWaDisplay(item) {
   if (!item) return "—";
-  if (item.wa && item.wa.trim()) return item.wa;
-
-  const pengaju = (item.pengaju || "").toLowerCase().trim();
-  if (pengaju) {
-    const wa = getRoleWaNumber(pengaju);
-    if (wa) return wa;
-  }
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith("spms_profile_")) {
-      const data = JSON.parse(localStorage.getItem(k) || "{}");
-      if (data && data.wa) return data.wa;
-    }
-  }
-
+  if (item.wa && item.wa.trim()) return item.wa.trim();
   return "—";
 }
 
@@ -150,7 +135,8 @@ window.sendWaNotification = async function(id, action) {
   const item = items.find(i => i.id == id);
   if (!item) return;
 
-  const invPhone = resolveWaDisplay(item);
+  // Inventaris number comes strictly from the item submission form (item.wa)!
+  const invPhone = item.wa && item.wa.trim() ? item.wa.trim() : "";
   const mgrPhone = getRoleWaNumber("manager");
   const dirPhone = getRoleWaNumber("direktur");
   const admPhone = getRoleWaNumber("admin");
