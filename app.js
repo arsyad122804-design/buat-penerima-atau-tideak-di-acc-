@@ -1920,6 +1920,11 @@ function getGeminiApiKey() {
 
 async function fetchGeminiAiResponse(queryText) {
   const apiKey = getGeminiApiKey();
+
+  if (!apiKey || !apiKey.startsWith("AIzaSy")) {
+    return generateSmartAiResponse(queryText);
+  }
+
   const totalItems = items.length;
   const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
   const approvedCount = items.filter(i => i.approval === 'Disetujui').length;
@@ -1990,6 +1995,8 @@ Petunjuk Respons:
 }
 
 window.askAiPrompt = async function(queryText) {
+  if (!queryText || !queryText.trim()) return;
+
   const modalAi = document.getElementById("modal-ai-assistant");
   if (modalAi) {
     modalAi.style.display = "flex";
@@ -2010,22 +2017,23 @@ window.askAiPrompt = async function(queryText) {
   chatBody.scrollTop = chatBody.scrollHeight;
 
   // 2. Typing indicator
+  const typingId = "typing-" + Date.now();
   const typingMsg = document.createElement("div");
   typingMsg.className = "ai-msg ai-msg--bot";
-  typingMsg.id = "ai-typing-indicator";
+  typingMsg.id = typingId;
   typingMsg.innerHTML = `
     <div class="ai-avatar">🤖</div>
     <div class="ai-bubble" style="color:var(--clr-muted); font-style:italic;">
-      <span>SPMS AI (Gemini 1.5 Flash) sedang memikirkan jawaban... ⚡</span>
+      <span>SPMS AI sedang memproses... ⚡</span>
     </div>
   `;
   chatBody.appendChild(typingMsg);
   chatBody.scrollTop = chatBody.scrollHeight;
 
-  // 3. Fetch Gemini AI Response asynchronously with fallback
+  // 3. Fetch AI Response asynchronously with fallback
   try {
     const responseHtml = await fetchGeminiAiResponse(queryText);
-    const indicator = document.getElementById("ai-typing-indicator");
+    const indicator = document.getElementById(typingId);
     if (indicator) indicator.remove();
 
     const botMsg = document.createElement("div");
@@ -2037,7 +2045,7 @@ window.askAiPrompt = async function(queryText) {
     chatBody.appendChild(botMsg);
     chatBody.scrollTop = chatBody.scrollHeight;
   } catch (err) {
-    const indicator = document.getElementById("ai-typing-indicator");
+    const indicator = document.getElementById(typingId);
     if (indicator) indicator.remove();
 
     const fallbackHtml = generateSmartAiResponse(queryText);

@@ -31,10 +31,12 @@
       if (!input) return false;
       var text = input.value.trim();
       if (!text) return false;
+
+      input.value = "";
+
       if (window.askAiPrompt) {
         window.askAiPrompt(text);
       }
-      input.value = "";
       return false;
     }
   </script>
