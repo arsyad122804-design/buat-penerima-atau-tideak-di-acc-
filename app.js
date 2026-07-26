@@ -1835,6 +1835,21 @@ window.addEventListener("DOMContentLoaded", () => {
 // =====================================================
 // SPMS AI ASSISTANT LOGIC
 // =====================================================
+window.toggleAiModal = function(show) {
+  const modalAi = document.getElementById("modal-ai-assistant");
+  if (!modalAi) return;
+
+  if (show === false) {
+    modalAi.style.cssText = "display: none !important; opacity: 0 !important; visibility: hidden !important;";
+    modalAi.classList.remove("open");
+  } else {
+    modalAi.style.cssText = "display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important;";
+    modalAi.classList.add("open");
+    const inputAi = document.getElementById("ai-input-text");
+    if (inputAi) setTimeout(() => inputAi.focus(), 100);
+  }
+};
+
 function initAiAssistant() {
   const btnOpenAi = document.getElementById("btn-open-ai");
   const btnHeaderAi = document.getElementById("btn-header-ai");
@@ -1845,25 +1860,12 @@ function initAiAssistant() {
 
   if (!modalAi) return;
 
-  const openModal = (e) => {
-    if (e) e.preventDefault();
-    modalAi.style.display = "flex";
-    modalAi.classList.add("open");
-    if (inputAi) inputAi.focus();
-  };
-
-  const closeModal = (e) => {
-    if (e) e.preventDefault();
-    modalAi.style.display = "none";
-    modalAi.classList.remove("open");
-  };
-
-  if (btnOpenAi) btnOpenAi.addEventListener("click", openModal);
-  if (btnHeaderAi) btnHeaderAi.addEventListener("click", openModal);
-  if (btnCloseAi) btnCloseAi.addEventListener("click", closeModal);
+  if (btnOpenAi) btnOpenAi.addEventListener("click", () => toggleAiModal(true));
+  if (btnHeaderAi) btnHeaderAi.addEventListener("click", () => toggleAiModal(true));
+  if (btnCloseAi) btnCloseAi.addEventListener("click", () => toggleAiModal(false));
 
   modalAi.addEventListener("click", (e) => {
-    if (e.target === modalAi) closeModal(e);
+    if (e.target === modalAi) toggleAiModal(false);
   });
 
   if (formAi) {

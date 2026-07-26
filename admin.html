@@ -115,7 +115,7 @@
           <h1 class="header-title" id="header-page-title">Beranda</h1>
         </div>
         <div class="header-actions">
-          <button class="btn-notif" id="btn-header-ai" title="Asisten AI SPMS" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; font-size: 15px; font-weight:700;">
+          <button class="btn-notif" id="btn-header-ai" onclick="toggleAiModal(true)" title="Asisten AI SPMS" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; font-size: 15px; font-weight:700;">
             🤖
           </button>
           <div class="notif-container" id="notif-container">
@@ -706,7 +706,7 @@
       </form>
     </div>
   <!-- Floating AI Assistant Button -->
-  <button type="button" class="ai-fab-btn" id="btn-open-ai" title="Asisten Pengadaan AI SPMS">
+  <button type="button" class="ai-fab-btn" id="btn-open-ai" onclick="toggleAiModal(true)" title="Asisten Pengadaan AI SPMS">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 0 0-6 6c0 3.31 2.69 6 6 6s6-2.69 6-6a6 6 0 0 0-6-6z"/></svg>
     <span>🤖 Asisten AI</span>
   </button>
@@ -719,7 +719,7 @@
           <span>🤖</span> SPMS AI Assistant
           <span class="ai-badge">Gemini Engine v2.0</span>
         </h3>
-        <button class="btn-close-modal" id="btn-close-ai-modal" style="color:white; background:rgba(255,255,255,0.15);">
+        <button class="btn-close-modal" id="btn-close-ai-modal" onclick="toggleAiModal(false)" style="color:white; background:rgba(255,255,255,0.15);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
