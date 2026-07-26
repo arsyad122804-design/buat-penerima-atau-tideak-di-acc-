@@ -1912,20 +1912,12 @@ function initAiAssistant() {
   });
 
   if (formAi) {
-    formAi.addEventListener("submit", (e) => submitAiForm(e));
+  formAi.addEventListener("submit", (e) => submitAiForm(e));
   }
 }
 
 function escapeHtml(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-function getGeminiApiKey() {
-  try {
-    return atob("QVEuQWI4Uk42SzRma0RmVnRibmd3cXJlek1COVRrMFZMbDE2ZVNtVEpjRVJRc3NHSzNpYkE=");
-  } catch(e) {
-    return "";
-  }
 }
 
 async function fetchGeminiAiResponse(queryText) {
@@ -1935,52 +1927,70 @@ async function fetchGeminiAiResponse(queryText) {
     return generateSmartAiResponse(queryText);
   }
 
-  const totalItems = items.length;
+  const totalItems   = items.length;
   const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
-  const approvedCount = items.filter(i => i.approval === 'Disetujui').length;
-  const boughtCount = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
-  const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  const approvedCount= items.filter(i => i.approval === 'Disetujui' || i.approval === 'Disetujui Direktur').length;
+  const rejectedCount= items.filter(i => i.approval === 'Ditolak').length;
+  const boughtCount  = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
+  const belumCount   = items.filter(i => i.approval === 'Disetujui' && i.pembelian !== 'Sudah Dibeli').length;
+  const totalRupiah  = items.reduce((sum, i) => sum + ((parseFloat(i.price)||0) * (parseInt(i.qty)||1)), 0);
+  const boughtRupiah = items.filter(i => i.pembelian === 'Sudah Dibeli')
+                            .reduce((sum, i) => sum + ((parseFloat(i.price)||0) * (parseInt(i.qty)||1)), 0);
 
-  const databaseSummary = items.slice(0, 15).map(i => 
-    `- ${i.name} (${i.dept}): ${i.qty} Pcs @ Rp ${i.price} (Pengaju: ${i.pengaju || 'Staff'}, Status: ${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli' : i.approval})`
+  const databaseSummary = items.slice(0, 20).map(i =>
+    `- ${i.name} | Unit: ${i.dept} | Qty: ${i.qty} Pcs | Harga: Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} | Pengaju: ${i.pengaju || 'Staff'} | Urgensi: ${i.urgency || 'Normal'} | Status: ${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli' : i.approval || 'Pending'} | Tgl: ${i.tanggal || '-'}`
   ).join("\n");
 
-  const systemContext = `Anda adalah SPMS AI Assistant 🤖, asisten pengadaan dan panduan aplikasi pintar untuk SPMS (School Procurement Management System) Hibatullah IIBS.
+  const systemContext = `Kamu adalah SPMS AI Assistant, asisten pengadaan barang sekolah Hibatullah IIBS.
 
-Data Live Pengadaan Sekolah Saat Ini:
+Sistem ini memiliki 4 jenis pengguna:
+1. **Inventaris (Pengaju)** — Menginput pengajuan barang kebutuhan sekolah
+2. **Manager** — Menyetujui atau menolak pengajuan barang dari inventaris
+3. **Direktur** — Memberikan persetujuan final atas pengajuan yang sudah di-acc Manager
+4. **Admin** — Mengeksekusi pembelian fisik barang yang sudah disetujui, mencatat bukti, dan mengirim WA konfirmasi ke pengaju
+
+Alur kerja SPMS:
+Inventaris input → notif WA ke Manager → Manager acc → notif WA ke Direktur → Direktur acc final → notif WA ke Admin → Admin beli & tandai sudah dibeli → notif WA ke Pengaju
+
+Data REAL database pengadaan sekarang:
 - Total Pengajuan: ${totalItems} barang
-- Pending Persetujuan: ${pendingCount} barang
-- Disetujui: ${approvedCount} barang
-- Selesai Dibeli: ${boughtCount} barang
-- Total Estimasi Anggaran: Rp ${totalRupiah.toLocaleString('id-ID')}
+- Menunggu Persetujuan (Pending): ${pendingCount} barang
+- Sudah Disetujui Manajemen: ${approvedCount} barang
+- Ditolak: ${rejectedCount} barang
+- Sudah Dibeli Admin: ${boughtCount} barang
+- Belum Dibeli (sudah acc tapi belum dibeli): ${belumCount} barang
+- Total Estimasi Anggaran Seluruh Pengajuan: Rp ${totalRupiah.toLocaleString('id-ID')}
+- Total Nilai Barang Sudah Dibeli: Rp ${boughtRupiah.toLocaleString('id-ID')}
 
-Sampel Data Barang di Database:
+Daftar Barang di Database (maks 20 terbaru):
 ${databaseSummary}
 
-Petunjuk Respons:
-1. Jawablah dengan sopan, jelas, profesional, dan ramah dalam bahasa Indonesia.
-2. Gunakan format HTML sederhana seperti <strong>, <em>, <br>, atau list <ul><li> jika membantu keterbacaan.
-3. Bantu jelaskan alur pengajuan barang, persetujuan Manager/Direktur, pembelian Admin, notifikasi WA Fonnte (+62), profil tanda tangan digital, maupun analisis budget sesuai pertanyaan user.`;
+Aturan menjawab:
+- Jawab LANGSUNG sesuai pertanyaan, jangan preamble panjang
+- Gunakan data real di atas jika relevan
+- Gunakan bahasa Indonesia santai tapi profesional
+- Jika ditanya data (berapa barang, total anggaran, dll) — jawab pakai angka real di atas
+- Jika ditanya cara kerja/alur — jelaskan alur di atas secara singkat
+- Format dengan <strong>, <br>, <ul><li> jika membantu
+- Jangan pernah mulai jawaban dengan "Saya memahami..." atau "Tentu saja, pertanyaan Anda..."`;
 
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [
           {
             role: "user",
             parts: [
               { text: systemContext },
-              { text: `Pertanyaan Pengguna: ${queryText}` }
+              { text: queryText }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 800
+          temperature: 0.65,
+          maxOutputTokens: 900
         }
       })
     });
@@ -2072,118 +2082,184 @@ window.askAiPrompt = async function(queryText) {
 
 function generateSmartAiResponse(text) {
   const query = (text || "").trim().toLowerCase();
-  const totalItems = items.length;
-  const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
+
+  const totalItems    = items.length;
+  const pendingCount  = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
   const approvedCount = items.filter(i => i.approval === 'Disetujui' || i.approval === 'Disetujui Direktur').length;
-  const boughtCount = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
-  const totalRupiah = items.reduce((sum, i) => {
-    const p = parseFloat(i.price) || 0;
-    const q = parseInt(i.qty) || 1;
-    return sum + (p * q);
-  }, 0);
+  const rejectedCount = items.filter(i => i.approval === 'Ditolak').length;
+  const boughtCount   = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
+  const belumCount    = items.filter(i => i.approval === 'Disetujui' && i.pembelian !== 'Sudah Dibeli').length;
+  const totalRupiah   = items.reduce((sum, i) => sum + ((parseFloat(i.price)||0) * (parseInt(i.qty)||1)), 0);
+  const boughtRupiah  = items.filter(i => i.pembelian === 'Sudah Dibeli')
+                             .reduce((sum, i) => sum + ((parseFloat(i.price)||0) * (parseInt(i.qty)||1)), 0);
 
-  // 1. APA KABAR & PERCAKAPAN RAMAH
-  if (query.includes("apa kabar") || query.includes("kabar") || query.includes("gimana kabar") || query.includes("sehat")) {
-    return `Alhamdulillah saya sehat dan siap membantu kak! 😊 Kakak sendiri bagaimana kabarnya hari ini? Ada pengajuan barang atau informasi pengadaan sekolah yang ingin ditanyakan?`;
+  // 1. SALAM / SAPAAN
+  if (/^(hai|haii|haiii|halo|haloo|hello|helo|assalamu|assalamualaikum|pagi|siang|malam|salam|tes|test|p\b|oi\b|woi\b|min\b|gan\b)/i.test(query) || query.length <= 3) {
+    return `Halo kak! 👋 Ada yang bisa saya bantu hari ini? Tanyakan soal pengajuan barang, status persetujuan, atau informasi pengadaan SPMS ya! 😊`;
   }
 
-  // 2. MENYAPA & SALAM (GREETINGS)
-  if (/^(hai|haii|haiii|halo|haloo|hello|helo|p|assalamu|assalamualaikum|pagi|siang|malam|bot|spms|woi|oi|gan|min|salam|tes|test)/i.test(query) || query.length <= 3) {
-    return `Halo kak! 👋😊 Ada yang bisa saya bantu terkait aplikasi SPMS Hibatullah IIBS hari ini?`;
+  // 2. APA KABAR
+  if (query.includes("apa kabar") || query.includes("gimana kabar") || query.includes("kabar kamu") || query.includes("sehat")) {
+    return `Alhamdulillah baik kak, siap membantu! 😊 Kakak sendiri gimana? Ada yang bisa dibantu terkait pengadaan barang sekolah?`;
   }
 
-  // 3. TENTANG IDENTITAS AI
-  if (query.includes("siapa") || query.includes("kamu") || query.includes("anda") || query.includes("fitur")) {
-    return `Saya SPMS AI Assistant 🤖, asisten pintar pengadaan sekolah Hibatullah IIBS. Saya siap membantu kakak cek alur pengajuan, status persetujuan, pembelian admin, hingga pencarian barang!`;
+  // 3. IDENTITAS AI
+  if (query.includes("siapa kamu") || query.includes("siapa anda") || query.includes("kamu itu apa") || (query.includes("siapa") && query.includes("spms"))) {
+    return `Saya SPMS AI Assistant 🤖, asisten digital pengadaan barang Hibatullah IIBS. Saya bisa bantu kak cek status pengajuan, alur kerja sistem, data barang, atau panduan penggunaan aplikasi ini!`;
   }
 
-  // 4. MENANYAKAN STATUS PENGAJUAN BARANG / KONDISI DATABASE
-  if (query.includes("status") || query.includes("pending") || query.includes("berapa") || query.includes("total")) {
+  // 4. RINGKASAN / DASHBOARD DATA
+  if (query.includes("ringkasan") || query.includes("rekapan") || query.includes("rekap") || query.includes("dashboard") || query.includes("laporan")) {
     return `
-      📋 <strong>Status Ringkasan Pengadaan Saat Ini</strong>:<br><br>
+      📊 <strong>Ringkasan Pengadaan SPMS Saat Ini</strong>:<br><br>
       • Total Pengajuan: <strong>${totalItems} barang</strong><br>
       • Menunggu Persetujuan: <strong>${pendingCount} barang ⏳</strong><br>
       • Disetujui Manajemen: <strong>${approvedCount} barang ✅</strong><br>
-      • Selesai Dibeli Admin: <strong>${boughtCount} barang 🛒</strong><br>
-      • Total Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br><br>
-      <em>Buka tab Persetujuan atau Laporan untuk rincian barang!</em>
+      • Ditolak: <strong>${rejectedCount} barang ❌</strong><br>
+      • Sudah Dibeli Admin: <strong>${boughtCount} barang 🛒</strong><br>
+      • Sudah Di-acc tapi Belum Dibeli: <strong>${belumCount} barang ⚠️</strong><br>
+      • Total Estimasi Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      • Total Nilai Sudah Dibeli: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>
     `;
   }
 
-  // 5. ALUR PENGAJUAN BARANG BARU (INVENTARIS)
-  if (query.includes("ajukan") || query.includes("tambah") || query.includes("daftar") || query.includes("alur") || query.includes("buat")) {
+  // 5. BERAPA / TOTAL / JUMLAH
+  if (query.includes("berapa") || query.includes("total") || query.includes("jumlah") || query.includes("anggaran") || query.includes("budget")) {
+    if (query.includes("pending") || query.includes("belum disetujui")) {
+      return `Saat ini ada <strong>${pendingCount} pengajuan barang</strong> yang masih menunggu persetujuan Manager/Direktur. 😊`;
+    }
+    if (query.includes("disetujui") || query.includes("acc")) {
+      return `Total yang sudah disetujui manajemen: <strong>${approvedCount} barang</strong>. Dari jumlah itu, <strong>${belumCount} barang</strong> belum dibeli Admin dan <strong>${boughtCount} barang</strong> sudah selesai dibeli. ✅`;
+    }
+    if (query.includes("dibeli") || query.includes("sudah beli")) {
+      return `Admin sudah menyelesaikan pembelian <strong>${boughtCount} barang</strong> dengan total nilai <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>. 🛒`;
+    }
+    if (query.includes("ditolak")) {
+      return `Ada <strong>${rejectedCount} pengajuan</strong> yang ditolak oleh manajemen. ❌`;
+    }
+    return `
+      📊 <strong>Statistik Pengadaan</strong>:<br><br>
+      • Total Pengajuan: <strong>${totalItems} barang</strong><br>
+      • Pending: <strong>${pendingCount}</strong> | Disetujui: <strong>${approvedCount}</strong> | Ditolak: <strong>${rejectedCount}</strong><br>
+      • Sudah Dibeli: <strong>${boughtCount}</strong> | Belum Dibeli: <strong>${belumCount}</strong><br>
+      • Total Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong><br>
+      • Realisasi Pembelian: <strong>Rp ${boughtRupiah.toLocaleString('id-ID')}</strong>
+    `;
+  }
+
+  // 6. ALUR / CARA KERJA SISTEM
+  if (query.includes("alur") || query.includes("cara kerja") || query.includes("proses") || query.includes("langkah") || query.includes("mekanisme")) {
+    return `
+      🔄 <strong>Alur Kerja SPMS Hibatullah IIBS</strong>:<br><br>
+      <strong>1. Inventaris</strong> mengajukan kebutuhan barang<br>
+      <strong>2. Manager</strong> menerima notif WA → review & setujui<br>
+      <strong>3. Direktur</strong> menerima notif WA → persetujuan final<br>
+      <strong>4. Admin</strong> menerima notif WA → eksekusi pembelian<br>
+      <strong>5. Pengaju</strong> menerima notif WA konfirmasi barang sudah dibeli 🎉<br><br>
+      <em>Setiap tahap ada notifikasi WhatsApp otomatis!</em>
+    `;
+  }
+
+  // 7. CARA MENGAJUKAN BARANG
+  if (query.includes("ajukan") || query.includes("pengajuan") || query.includes("tambah barang") || query.includes("daftar barang") || query.includes("input")) {
     return `
       📝 <strong>Cara Mengajukan Barang Baru</strong>:<br><br>
-      1. Klik tombol <strong>+ Tambah Barang</strong> di beranda.<br>
-      2. Pilih unit (Kepesantrenan / SMK / SMP).<br>
-      3. Masukkan nama barang, jumlah, estimasi harga, & <strong>Nomor WhatsApp Pengaju</strong>.<br>
-      4. Klik <strong>Simpan & Ajukan</strong>.<br><br>
-      📲 <em>Sistem akan otomatis mengirimkan notifikasi WhatsApp ke Manager & Direktur!</em>
+      1. Klik tombol <strong>+ Tambah Barang</strong> di beranda<br>
+      2. Pilih unit (Kepesantrenan / SMK / SMP)<br>
+      3. Isi nama barang, jumlah, harga satuan, urgensi, dan keterangan<br>
+      4. Isi nama pengaju + nomor WhatsApp<br>
+      5. Buat tanda tangan digital<br>
+      6. Klik <strong>Simpan & Ajukan</strong><br><br>
+      📲 <em>Notifikasi WA otomatis dikirim ke Manager & Direktur!</em>
     `;
   }
 
-  // 6. PROSES PERSETUJUAN (MANAGER & DIREKTUR)
-  if (query.includes("setuju") || query.includes("persetujuan") || query.includes("acc") || query.includes("direktur") || query.includes("manager")) {
+  // 8. CARA PERSETUJUAN (MANAGER / DIREKTUR)
+  if (query.includes("setuju") || query.includes("acc") || query.includes("tolak") || query.includes("persetujuan") ||
+      query.includes("manager") || query.includes("direktur") || query.includes("approve")) {
     return `
-      ✅ <strong>Cara Melakukan Persetujuan (Manager & Direktur)</strong>:<br><br>
-      1. Buka menu <strong>Persetujuan</strong>.<br>
-      2. Tinjau barang yang diajukan oleh tim Inventaris.<br>
-      3. Klik <strong>✓ Setuju</strong> untuk menyetujui atau <strong>✕ Nolak</strong> untuk menolak.<br><br>
-      📲 <em>Setelah disetujui, notifikasi WhatsApp otomatis diteruskan ke Admin untuk dibeli!</em>
+      ✅ <strong>Cara Persetujuan Pengajuan</strong>:<br><br>
+      1. Buka tab <strong>Persetujuan</strong> di menu navigasi<br>
+      2. Lihat daftar barang yang <em>Pending</em><br>
+      3. Klik <strong>✓ Setuju</strong> untuk menyetujui, atau <strong>✕ Tolak</strong> untuk menolak<br>
+      4. Sistem otomatis kirim notifikasi WA ke tahap berikutnya<br><br>
+      <em>Saat ini ada <strong>${pendingCount} barang</strong> menunggu persetujuan.</em>
     `;
   }
 
-  // 7. PROSES PEMBELIAN (ADMIN)
-  if (query.includes("beli") || query.includes("dibeli") || query.includes("admin")) {
+  // 9. PEMBELIAN ADMIN
+  if (query.includes("beli") || query.includes("dibeli") || query.includes("pembelian") || query.includes("tandai")) {
     return `
-      🛒 <strong>Cara Memproses Pembelian Barang (Admin)</strong>:<br><br>
-      1. Login ke portal Admin (admin.html).<br>
-      2. Buka menu <strong>Pembelian Barang</strong>.<br>
-      3. Pada barang berstatus <em>Disetujui</em>, klik <strong>Tandai Dibeli</strong>.<br><br>
-      📲 <em>Sistem akan mengirimkan balasan WhatsApp otomatis ke pengaju bahwa barang telah selesai dibeli!</em>
+      🛒 <strong>Cara Admin Memproses Pembelian</strong>:<br><br>
+      1. Login ke portal <strong>Admin</strong><br>
+      2. Buka menu <strong>Pembelian Barang</strong><br>
+      3. Barang berstatus <em>Disetujui</em> akan muncul di sini<br>
+      4. Klik <strong>Tandai Sudah Dibeli</strong><br>
+      5. Sistem kirim notifikasi WA ke pengaju otomatis<br><br>
+      <em>Saat ini ada <strong>${belumCount} barang</strong> sudah di-acc tapi belum dibeli.</em>
     `;
   }
 
-  // 8. NOTIFIKASI WHATSAPP & NO WA
-  if (query.includes("wa") || query.includes("whatsapp") || query.includes("notif") || query.includes("fonnte") || query.includes("nomor")) {
+  // 10. NOTIFIKASI WA
+  if (query.includes("wa") || query.includes("whatsapp") || query.includes("notif") || query.includes("fonnte") || query.includes("kirim pesan")) {
     return `
-      📱 <strong>Sistem Notifikasi WhatsApp Otomatis (+62)</strong>:<br><br>
-      • <strong>Pengaju (Inventaris)</strong>: Nomor WA diisi saat mengajukan barang.<br>
-      • <strong>Manager & Direktur</strong>: Nomor WA diambil dari menu <strong>Profil Saya</strong>.<br>
-      • Notifikasi dikirim otomatis tanpa perlu mengetik manual!
+      📱 <strong>Sistem Notifikasi WhatsApp Otomatis</strong>:<br><br>
+      • <strong>Ke Manager & Direktur</strong>: saat ada pengajuan baru dari Inventaris<br>
+      • <strong>Ke Admin</strong>: saat barang sudah disetujui Direktur<br>
+      • <strong>Ke Pengaju</strong>: saat barang berhasil dibeli Admin<br><br>
+      Nomor WA diambil dari profil masing-masing pengguna. Pastikan profil sudah diisi!
     `;
   }
 
-  // 9. PROFIL & TANDA TANGAN DIGITAL
-  if (query.includes("profil") || query.includes("nama") || query.includes("tanda tangan") || query.includes("ttd")) {
+  // 11. PROFIL & TANDA TANGAN
+  if (query.includes("profil") || query.includes("tanda tangan") || query.includes("ttd") || query.includes("signature") || query.includes("nama saya")) {
     return `
-      👤 <strong>Profil Saya & Tanda Tangan Digital</strong>:<br><br>
-      1. Masuk ke tab <strong>Profil Saya</strong>.<br>
-      2. Isi Nama Lengkap & Nomor WhatsApp Anda.<br>
-      3. Buat tanda tangan digital pada kanvas.<br>
-      4. Klik <strong>Simpan Profil & Tanda Tangan</strong>.
+      👤 <strong>Cara Mengisi Profil & Tanda Tangan Digital</strong>:<br><br>
+      1. Masuk ke tab <strong>Profil Saya</strong><br>
+      2. Isi <strong>Nama Lengkap</strong> dan <strong>Nomor WhatsApp</strong> (format +62)<br>
+      3. Gambar tanda tangan di kanvas digital<br>
+      4. Klik <strong>Simpan Profil & Tanda Tangan</strong><br><br>
+      <em>Profil ini digunakan untuk identifikasi di setiap notifikasi WA!</em>
     `;
   }
 
-  // 10. PENCARIAN DATABASE REAL-TIME
-  const matchedItems = items.filter(i => 
-    i.name.toLowerCase().includes(query) || 
-    i.dept.toLowerCase().includes(query) || 
+  // 12. BARANG URGENT
+  if (query.includes("urgent") || query.includes("mendesak") || query.includes("prioritas") || query.includes("darurat")) {
+    const urgentItems = items.filter(i => i.urgency === 'Urgent');
+    if (urgentItems.length > 0) {
+      const urgentList = urgentItems.slice(0, 5).map(i =>
+        `• <strong>${i.name}</strong> (${i.dept}) — Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval || 'Pending'}</em>`
+      ).join('<br>');
+      return `⚠️ Ada <strong>${urgentItems.length} barang URGENT</strong> di database:<br><br>${urgentList}`;
+    }
+    return `Saat ini tidak ada barang dengan status Urgent di database. Semua pengajuan berstatus Normal. 😊`;
+  }
+
+  // 13. CARI BARANG DI DATABASE
+  const matchedItems = items.filter(i =>
+    i.name.toLowerCase().includes(query) ||
+    i.dept.toLowerCase().includes(query) ||
     (i.pengaju || '').toLowerCase().includes(query)
   );
 
   if (matchedItems.length > 0) {
-    const matchedList = matchedItems.map(i => 
-      `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval}</em>`
+    const matchedList = matchedItems.slice(0, 8).map(i =>
+      `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs @ Rp ${(parseFloat(i.price)||0).toLocaleString('id-ID')} | Status: <em>${i.pembelian === 'Sudah Dibeli' ? 'Sudah Dibeli 🛒' : i.approval || 'Pending'}</em>`
     ).join('<br>');
+    const totalVal = matchedItems.reduce((s, x) => s + ((parseFloat(x.price)||0) * (parseInt(x.qty)||1)), 0);
     return `
-      🔍 <strong>Informasi Pengadaan untuk "${escapeHtml(text)}"</strong>:<br><br>
-      Ditemukan <strong>${matchedItems.length} pengajuan barang</strong> terkait:<br><br>
+      🔍 <strong>Hasil Pencarian: "${escapeHtml(text)}"</strong><br><br>
+      Ditemukan <strong>${matchedItems.length} barang</strong>:<br><br>
       ${matchedList}<br><br>
-      <em>Total nilai pengajuan: Rp ${matchedItems.reduce((s, x) => s + ((parseFloat(x.price)||0) * (parseInt(x.qty)||1)), 0).toLocaleString('id-ID')}</em>
+      <em>Total nilai: Rp ${totalVal.toLocaleString('id-ID')}</em>
     `;
   }
 
-  // 11. RESPONS KONTEKSTUAL RAMAH TANPA TEMPLATE KAKU
-  return `Saya mengerti kak. Untuk informasi pengadaan SPMS, kakak bisa tanyakan tentang cara pengajuan barang, status persetujuan, notifikasi WA, atau ketik nama barang yang ingin dicari (seperti <em>kasur</em>, <em>proyektor</em>, atau <em>smk</em>)! 😊`;
+  // 14. DEFAULT — tetap ramah
+  return `Hmm, saya belum punya jawaban spesifik untuk itu kak. Coba tanyakan tentang:<br><br>
+    • <em>Status pengajuan / berapa barang pending</em><br>
+    • <em>Cara mengajukan / menyetujui barang</em><br>
+    • <em>Pembelian admin / notifikasi WA</em><br>
+    • <em>Cari nama barang tertentu</em><br><br>
+    Atau ketik nama barang yang ingin dicari ya! 😊`;
 }
