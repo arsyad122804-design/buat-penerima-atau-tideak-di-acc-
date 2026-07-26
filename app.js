@@ -43,6 +43,7 @@ const FONNTE_TOKEN = "EvEc9ZQsRM8dCWUCqujm";
 function getRoleWaNumber(targetRole) {
   try {
     const roleClean = (targetRole || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+    if (!roleClean) return "";
     
     // Exact profile keys to try
     const keysToTry = [
@@ -55,25 +56,14 @@ function getRoleWaNumber(targetRole) {
       if (data && data.wa) return data.wa;
     }
 
-    // Secondary scan across all spms_profile_ keys
+    // Secondary scan for matching profile key ONLY
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k && k.startsWith("spms_profile_")) {
-        const data = JSON.parse(localStorage.getItem(k) || "{}");
-        if (data && data.wa) {
-          if (k.includes(roleClean) || (roleClean === "direktur" && k.includes("hibatullah"))) {
-            return data.wa;
-          }
+        if (k.includes(roleClean) || (roleClean === "direktur" && k.includes("hibatullah"))) {
+          const data = JSON.parse(localStorage.getItem(k) || "{}");
+          if (data && data.wa) return data.wa;
         }
-      }
-    }
-
-    // Global fallback
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.startsWith("spms_profile_")) {
-        const data = JSON.parse(localStorage.getItem(k) || "{}");
-        if (data && data.wa) return data.wa;
       }
     }
   } catch (e) {}
@@ -100,6 +90,16 @@ function formatWaInput(val) {
 function resolveWaDisplay(item) {
   if (!item) return "—";
   if (item.wa && item.wa.trim()) return formatWaInput(item.wa.trim());
+
+  const pengaju = (item.pengaju || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+  if (pengaju) {
+    const key = "spms_profile_" + pengaju;
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      if (data && data.wa) return formatWaInput(data.wa);
+    } catch(e) {}
+  }
+
   return "—";
 }
 
