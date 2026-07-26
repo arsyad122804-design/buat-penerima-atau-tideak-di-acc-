@@ -1852,7 +1852,6 @@ window.toggleAiModal = function(show) {
 
 function initAiAssistant() {
   const btnOpenAi = document.getElementById("btn-open-ai");
-  const btnHeaderAi = document.getElementById("btn-header-ai");
   const btnCloseAi = document.getElementById("btn-close-ai-modal");
   const modalAi = document.getElementById("modal-ai-assistant");
   const formAi = document.getElementById("form-ai-chat");
@@ -1860,9 +1859,31 @@ function initAiAssistant() {
 
   if (!modalAi) return;
 
-  if (btnOpenAi) btnOpenAi.addEventListener("click", () => toggleAiModal(true));
-  if (btnHeaderAi) btnHeaderAi.addEventListener("click", () => toggleAiModal(true));
-  if (btnCloseAi) btnCloseAi.addEventListener("click", () => toggleAiModal(false));
+  const handleOpen = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    toggleAiModal(true);
+  };
+
+  const handleClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    toggleAiModal(false);
+  };
+
+  if (btnOpenAi) {
+    btnOpenAi.addEventListener("click", handleOpen);
+    btnOpenAi.addEventListener("pointerdown", handleOpen);
+  }
+
+  if (btnCloseAi) {
+    btnCloseAi.addEventListener("click", handleClose);
+    btnCloseAi.addEventListener("pointerdown", handleClose);
+  }
 
   modalAi.addEventListener("click", (e) => {
     if (e.target === modalAi) toggleAiModal(false);
