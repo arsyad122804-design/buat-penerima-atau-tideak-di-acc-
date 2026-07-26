@@ -1828,4 +1828,138 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- Initialize AI Assistant ---
+  initAiAssistant();
 });
+
+// =====================================================
+// SPMS AI ASSISTANT LOGIC
+// =====================================================
+function initAiAssistant() {
+  const btnOpenAi = document.getElementById("btn-open-ai");
+  const btnCloseAi = document.getElementById("btn-close-ai-modal");
+  const modalAi = document.getElementById("modal-ai-assistant");
+  const formAi = document.getElementById("form-ai-chat");
+  const inputAi = document.getElementById("ai-input-text");
+
+  if (!btnOpenAi || !modalAi) return;
+
+  btnOpenAi.addEventListener("click", () => {
+    modalAi.classList.add("open");
+    if (inputAi) inputAi.focus();
+  });
+
+  if (btnCloseAi) {
+    btnCloseAi.addEventListener("click", () => {
+      modalAi.classList.remove("open");
+    });
+  }
+
+  modalAi.addEventListener("click", (e) => {
+    if (e.target === modalAi) modalAi.classList.remove("open");
+  });
+
+  if (formAi) {
+    formAi.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = inputAi.value.trim();
+      if (!text) return;
+      askAiPrompt(text);
+      inputAi.value = "";
+    });
+  }
+}
+
+function escapeHtml(str) {
+  return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+window.askAiPrompt = function(queryText) {
+  const chatBody = document.getElementById("ai-chat-body");
+  if (!chatBody) return;
+
+  // 1. Append User Message
+  const userMsg = document.createElement("div");
+  userMsg.className = "ai-msg ai-msg--user";
+  userMsg.innerHTML = `
+    <div class="ai-avatar">👤</div>
+    <div class="ai-bubble">${escapeHtml(queryText)}</div>
+  `;
+  chatBody.appendChild(userMsg);
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // 2. Typing indicator
+  const typingMsg = document.createElement("div");
+  typingMsg.className = "ai-msg ai-msg--bot";
+  typingMsg.id = "ai-typing-indicator";
+  typingMsg.innerHTML = `
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-bubble" style="color:var(--clr-muted); font-style:italic;">
+      <span>SPMS AI sedang memproses... ⚡</span>
+    </div>
+  `;
+  chatBody.appendChild(typingMsg);
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // 3. Generate AI Response after slight delay
+  setTimeout(() => {
+    const indicator = document.getElementById("ai-typing-indicator");
+    if (indicator) indicator.remove();
+
+    const responseHtml = generateSmartAiResponse(queryText);
+    const botMsg = document.createElement("div");
+    botMsg.className = "ai-msg ai-msg--bot";
+    botMsg.innerHTML = `
+      <div class="ai-avatar">🤖</div>
+      <div class="ai-bubble">${responseHtml}</div>
+    `;
+    chatBody.appendChild(botMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 600);
+};
+
+function generateSmartAiResponse(text) {
+  const query = text.toLowerCase();
+  const totalItems = items.length;
+  const pendingCount = items.filter(i => (i.approval || 'Pending') === 'Pending').length;
+  const approvedCount = items.filter(i => i.approval === 'Disetujui').length;
+  const boughtCount = items.filter(i => i.pembelian === 'Sudah Dibeli').length;
+  const urgentItems = items.filter(i => (i.urgency || '').toLowerCase().includes('urgen'));
+  const totalRupiah = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+  if (query.includes("ringkas") || query.includes("status") || query.includes("rekap")) {
+    return `
+      📊 <strong>Ringkasan Pengadaan SPMS Hibatullah IIBS</strong>:<br><br>
+      • Total Barang Didaftarkan: <strong>${totalItems} barang</strong><br>
+      • Menunggu Persetujuan: <strong>${pendingCount} barang</strong> ⏳<br>
+      • Disetujui (Menunggu Beli): <strong>${Math.max(0, approvedCount - boughtCount)} barang</strong> ✅<br>
+      • Selesai Dibeli: <strong>${boughtCount} barang</strong> 🛒<br>
+      • Total Estimasi Anggaran: <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>
+    `;
+  }
+
+  if (query.includes("budget") || query.includes("anggaran") || query.includes("efisiensi") || query.includes("rekomendasi")) {
+    return `
+      💡 <strong>Rekomendasi Efisiensi Budget SPMS AI</strong>:<br><br>
+      1. <strong>Skala Prioritas</strong>: Saat ini total pengajuan mencapai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>. Utamakan pembelian barang berstatus <em>Urgent</em> terlebih dahulu.<br>
+      2. <strong>Pembelian Kolektif</strong>: Gabungkan pembelian unit SMK, SMP, & Kepesantrenan untuk menekan biaya pengiriman & mendapatkan diskon grosir supplier.<br>
+      3. <strong>Vendor Terverifikasi</strong>: Pastikan admin meminta minimal 2 penawaran harga pembanding sebelum mengeklik <em>Tandai Dibeli</em>.
+    `;
+  }
+
+  if (query.includes("urgen") || query.includes("penting") || query.includes("darurat")) {
+    if (urgentItems.length === 0) {
+      return `🚨 <strong>Status Urgensi</strong>: Saat ini <strong>tidak ada barang yang berstatus Urgent</strong>. Semua pengajuan berjalan pada urgensi Normal.`;
+    }
+    const list = urgentItems.map(i => `• <strong>${i.name}</strong> (${i.dept}) — ${i.qty} Pcs (Rp ${(i.qty * i.price).toLocaleString('id-ID')})`).join('<br>');
+    return `🚨 <strong>Daftar Pengajuan Urgent (${urgentItems.length} Barang)</strong>:<br><br>${list}<br><br><em>Disarankan Direktur/Manager segera meninjau persetujuan barang-barang di atas.</em>`;
+  }
+
+  return `
+    🤖 <strong>Analisis AI SPMS</strong>:<br><br>
+    Berdasarkan data sistem pengadaan saat ini:<br>
+    - Terdaftar <strong>${totalItems} barang</strong> dengan total nilai <strong>Rp ${totalRupiah.toLocaleString('id-ID')}</strong>.<br>
+    - Ada <strong>${pendingCount} pengajuan</strong> yang masih menunggu persetujuan manajemen.<br><br>
+    <em>Anda dapat mengeklik tombol chip rekomendasi cepat di atas untuk informasi ringkasan atau efisiensi anggaran!</em>
+  `;
+}

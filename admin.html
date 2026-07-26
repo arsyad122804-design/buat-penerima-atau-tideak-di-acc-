@@ -702,6 +702,47 @@
         </div>
       </form>
     </div>
+  <!-- Floating AI Assistant Button -->
+  <button type="button" class="ai-fab-btn" id="btn-open-ai" title="Asisten Pengadaan AI SPMS">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 0 0-6 6c0 3.31 2.69 6 6 6s6-2.69 6-6a6 6 0 0 0-6-6z"/></svg>
+    <span>🤖 Asisten AI</span>
+  </button>
+
+  <!-- MODAL: SPMS AI Assistant -->
+  <div class="modal-backdrop" id="modal-ai-assistant">
+    <div class="ai-modal-card">
+      <div class="ai-modal-header">
+        <h3>
+          <span>🤖</span> SPMS AI Assistant
+          <span class="ai-badge">Gemini Engine v2.0</span>
+        </h3>
+        <button class="btn-close-modal" id="btn-close-ai-modal" style="color:white; background:rgba(255,255,255,0.15);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="ai-chat-body" id="ai-chat-body">
+        <div class="ai-chip-container">
+          <button type="button" class="ai-chip" onclick="askAiPrompt('Ringkaskan status pengadaan barang saat ini')">📊 Ringkasan Pengadaan</button>
+          <button type="button" class="ai-chip" onclick="askAiPrompt('Beri rekomendasi efisiensi budget pengadaan')">💡 Rekomendasi Budget</button>
+          <button type="button" class="ai-chip" onclick="askAiPrompt('Apakah ada pengajuan barang yang urgen?')">🚨 Cek Urgensi</button>
+        </div>
+
+        <div class="ai-msg ai-msg--bot">
+          <div class="ai-avatar">🤖</div>
+          <div class="ai-bubble">
+            Assalamu'alaikum! Saya **SPMS AI Assistant**. Saya siap membantu Anda menganalisis pengadaan barang, estimasi anggaran, serta rekomendasi efisiensi budget sekolah secara cerdas. Ada yang bisa saya bantu hari ini?
+          </div>
+        </div>
+      </div>
+
+      <form id="form-ai-chat" class="ai-input-row">
+        <input type="text" id="ai-input-text" placeholder="Tanya AI tentang pengadaan atau anggaran..." autocomplete="off">
+        <button type="submit" class="ai-btn-send" title="Kirim Pertanyaan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </div>
   </div>
 
   <script src="app.js"></script>

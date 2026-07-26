@@ -1,5 +1,5 @@
 @echo off
 set "PATH=C:\Program Files\Git\cmd;%PATH%"
 git add .
-git commit -m "Remove NOMOR WHATSAPP (WA) field from Inventaris profile view"
+git commit -m "Add SPMS AI Assistant floating chatbot and smart procurement analysis engine"
 git push origin main
