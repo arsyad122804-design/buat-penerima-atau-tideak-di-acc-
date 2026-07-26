@@ -642,7 +642,7 @@ function openModal(department = "Kepesantrenan") {
     const inputPengaju = document.getElementById("item-pengaju");
     const inputWa = document.getElementById("item-wa");
     if (prof.fullname && inputPengaju) inputPengaju.value = prof.fullname;
-    if (prof.wa && inputWa) inputWa.value = cleanWaInputValue(prof.wa);
+    if (inputWa) inputWa.value = "";
 
     if (prof.signature) {
       const activeCanvas = document.getElementById("signature-canvas");
